@@ -57,15 +57,15 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
-                    int offset = GetOffset(rowIndex, columnIndex);
+                    var offset = GetOffset(rowIndex, columnIndex);
                     return Marshal.ReadInt32(DataPointer, offset);
                 }
             }
@@ -73,15 +73,15 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
-                    int offset = GetOffset(rowIndex, columnIndex);
+                    var offset = GetOffset(rowIndex, columnIndex);
                     Marshal.WriteInt32(DataPointer, offset, value);
                 }
             }
@@ -103,17 +103,14 @@ namespace RDotNet
         /// <returns>Rectangular array with values representing the content of the R matrix. Beware NA codes</returns>
         protected override int[,] GetArrayFast()
         {
-            var values = new int[this.ItemCount];
+            var values = new int[ItemCount];
             Marshal.Copy(DataPointer, values, 0, values.Length);
-            return ArrayConverter.ArrayConvertAllTwoDim(values, this.RowCount, this.ColumnCount);
+            return ArrayConverter.ArrayConvertAllTwoDim(values, RowCount, ColumnCount);
         }
 
         /// <summary>
         /// Gets the size of an integer in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return sizeof(int); }
-        }
+        protected override int DataSize => sizeof(int);
     }
 }

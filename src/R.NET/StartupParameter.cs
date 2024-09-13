@@ -16,14 +16,14 @@ namespace RDotNet
         private static readonly ulong EnvironmentDependentMaxSize = Environment.Is64BitProcess ? ulong.MaxValue : uint.MaxValue;
 
         // Windows style RStart includes Unix-style RStart.
-        internal RStart start;
+        internal RStart Start;
 
         /// <summary>
         /// Create a new Startup parameter, using some default parameters
         /// </summary>
         public StartupParameter()
         {
-            this.start = new RStart();
+            Start = new RStart();
             SetDefaultParameter();
         }
 
@@ -32,8 +32,8 @@ namespace RDotNet
         /// </summary>
         public bool Quiet
         {
-            get { return this.start.Common.R_Quiet; }
-            set { this.start.Common.R_Quiet = value; }
+            get => Start.Common.R_Quiet;
+            set => Start.Common.R_Quiet = value;
         }
 
         /// <summary>
@@ -41,8 +41,8 @@ namespace RDotNet
         /// </summary>
         public bool Slave
         {
-            get { return this.start.Common.R_Slave; }
-            set { this.start.Common.R_Slave = value; }
+            get => Start.Common.R_Slave;
+            set => Start.Common.R_Slave = value;
         }
 
         /// <summary>
@@ -50,8 +50,8 @@ namespace RDotNet
         /// </summary>
         public bool Interactive
         {
-            get { return this.start.Common.R_Interactive; }
-            set { this.start.Common.R_Interactive = value; }
+            get => Start.Common.R_Interactive;
+            set => Start.Common.R_Interactive = value;
         }
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace RDotNet
         /// </summary>
         public bool Verbose
         {
-            get { return this.start.Common.R_Verbose; }
-            set { this.start.Common.R_Verbose = value; }
+            get => Start.Common.R_Verbose;
+            set => Start.Common.R_Verbose = value;
         }
 
         /// <summary>
@@ -68,8 +68,8 @@ namespace RDotNet
         /// </summary>
         public bool LoadSiteFile
         {
-            get { return this.start.Common.LoadSiteFile; }
-            set { this.start.Common.LoadSiteFile = value; }
+            get => Start.Common.LoadSiteFile;
+            set => Start.Common.LoadSiteFile = value;
         }
 
         /// <summary>
@@ -77,8 +77,8 @@ namespace RDotNet
         /// </summary>
         public bool LoadInitFile
         {
-            get { return this.start.Common.LoadInitFile; }
-            set { this.start.Common.LoadInitFile = value; }
+            get => Start.Common.LoadInitFile;
+            set => Start.Common.LoadInitFile = value;
         }
 
         /// <summary>
@@ -86,8 +86,8 @@ namespace RDotNet
         /// </summary>
         public bool DebugInitFile
         {
-            get { return this.start.Common.DebugInitFile; }
-            set { this.start.Common.DebugInitFile = value; }
+            get => Start.Common.DebugInitFile;
+            set => Start.Common.DebugInitFile = value;
         }
 
         /// <summary>
@@ -95,8 +95,8 @@ namespace RDotNet
         /// </summary>
         public StartupRestoreAction RestoreAction
         {
-            get { return this.start.Common.RestoreAction; }
-            set { this.start.Common.RestoreAction = value; }
+            get => Start.Common.RestoreAction;
+            set => Start.Common.RestoreAction = value;
         }
 
         /// <summary>
@@ -104,8 +104,8 @@ namespace RDotNet
         /// </summary>
         public StartupSaveAction SaveAction
         {
-            get { return this.start.Common.SaveAction; }
-            set { this.start.Common.SaveAction = value; }
+            get => Start.Common.SaveAction;
+            set => Start.Common.SaveAction = value;
         }
 
         /// <summary>
@@ -113,14 +113,11 @@ namespace RDotNet
         /// </summary>
         public ulong MinMemorySize
         {
-            get { return this.start.Common.vsize.ToUInt64(); }
+            get => Start.Common.vsize.ToUInt64();
             set
             {
-                if (value > EnvironmentDependentMaxSize)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                this.start.Common.vsize = new UIntPtr(value);
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                Start.Common.vsize = new UIntPtr(value);
             }
         }
 
@@ -129,14 +126,11 @@ namespace RDotNet
         /// </summary>
         public ulong MinCellSize
         {
-            get { return this.start.Common.nsize.ToUInt64(); }
+            get => Start.Common.nsize.ToUInt64();
             set
             {
-                if (value > EnvironmentDependentMaxSize)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                this.start.Common.nsize = new UIntPtr(value);
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                Start.Common.nsize = new UIntPtr(value);
             }
         }
 
@@ -145,14 +139,11 @@ namespace RDotNet
         /// </summary>
         public ulong MaxMemorySize
         {
-            get { return this.start.Common.max_vsize.ToUInt64(); }
+            get => Start.Common.max_vsize.ToUInt64();
             set
             {
-                if (value > EnvironmentDependentMaxSize)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                this.start.Common.max_vsize = new UIntPtr(value);
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                Start.Common.max_vsize = new UIntPtr(value);
             }
         }
 
@@ -161,14 +152,11 @@ namespace RDotNet
         /// </summary>
         public ulong MaxCellSize
         {
-            get { return this.start.Common.max_nsize.ToUInt64(); }
+            get => Start.Common.max_nsize.ToUInt64();
             set
             {
-                if (value > EnvironmentDependentMaxSize)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                this.start.Common.max_nsize = new UIntPtr(value);
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                Start.Common.max_nsize = new UIntPtr(value);
             }
         }
 
@@ -177,14 +165,11 @@ namespace RDotNet
         /// </summary>
         public ulong StackSize
         {
-            get { return this.start.Common.ppsize.ToUInt64(); }
+            get => Start.Common.ppsize.ToUInt64();
             set
             {
-                if (value > EnvironmentDependentMaxSize)
-                {
-                    throw new ArgumentOutOfRangeException("value");
-                }
-                this.start.Common.ppsize = new UIntPtr(value);
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                Start.Common.ppsize = new UIntPtr(value);
             }
         }
 
@@ -193,8 +178,8 @@ namespace RDotNet
         /// </summary>
         public bool NoRenviron
         {
-            get { return this.start.Common.NoRenviron; }
-            set { this.start.Common.NoRenviron = value; }
+            get => Start.Common.NoRenviron;
+            set => Start.Common.NoRenviron = value;
         }
 
         /// <summary>
@@ -211,7 +196,7 @@ namespace RDotNet
                 {
                     throw new NotSupportedException();
                 }
-                return Marshal.PtrToStringAnsi(this.start.rhome);
+                return Marshal.PtrToStringAnsi(Start.rhome);
             }
             set
             {
@@ -219,7 +204,7 @@ namespace RDotNet
                 {
                     throw new NotSupportedException();
                 }
-                this.start.rhome = Marshal.StringToHGlobalAnsi(value);
+                Start.rhome = Marshal.StringToHGlobalAnsi(value);
             }
         }
 
@@ -237,7 +222,7 @@ namespace RDotNet
                 {
                     throw new NotSupportedException();
                 }
-                return Marshal.PtrToStringAnsi(this.start.home);
+                return Marshal.PtrToStringAnsi(Start.home);
             }
             set
             {
@@ -245,7 +230,7 @@ namespace RDotNet
                 {
                     throw new NotSupportedException();
                 }
-                this.start.home = Marshal.StringToHGlobalAnsi(value);
+                Start.home = Marshal.StringToHGlobalAnsi(value);
             }
         }
 
@@ -263,7 +248,7 @@ namespace RDotNet
                 {
                     throw new NotSupportedException();
                 }
-                return this.start.CharacterMode;
+                return Start.CharacterMode;
             }
             set
             {
@@ -271,7 +256,7 @@ namespace RDotNet
                 {
                     throw new NotSupportedException();
                 }
-                this.start.CharacterMode = value;
+                Start.CharacterMode = value;
             }
         }
 

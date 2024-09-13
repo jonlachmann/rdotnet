@@ -7,43 +7,43 @@ namespace RDotNet
     [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
     internal class ProtectedPointer : IDisposable
     {
-        private readonly REngine engine;
+        private readonly REngine _engine;
 
         protected TDelegate GetFunction<TDelegate>() where TDelegate : class
         {
-            return engine.GetFunction<TDelegate>();
+            return _engine.GetFunction<TDelegate>();
         }
 
-        private readonly IntPtr sexp;
+        private readonly IntPtr _sexp;
 
         public ProtectedPointer(REngine engine, IntPtr sexp)
         {
-            this.sexp = sexp;
-            this.engine = engine;
+            _sexp = sexp;
+            _engine = engine;
 
-            this.GetFunction<Rf_protect>()(this.sexp);
+            GetFunction<Rf_protect>()(_sexp);
         }
 
         public ProtectedPointer(SymbolicExpression sexp)
         {
-            this.sexp = sexp.DangerousGetHandle();
-            this.engine = sexp.Engine;
+            _sexp = sexp.DangerousGetHandle();
+            _engine = sexp.Engine;
 
-            this.GetFunction<Rf_protect>()(this.sexp);
+            GetFunction<Rf_protect>()(_sexp);
         }
 
         #region IDisposable Members
 
         public void Dispose()
         {
-            this.GetFunction<Rf_unprotect_ptr>()(this.sexp);
+            GetFunction<Rf_unprotect_ptr>()(_sexp);
         }
 
         #endregion IDisposable Members
 
         public static implicit operator IntPtr(ProtectedPointer p)
         {
-            return p.sexp;
+            return p._sexp;
         }
     }
 }

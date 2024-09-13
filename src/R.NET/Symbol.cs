@@ -31,8 +31,8 @@ namespace RDotNet
             }
             set
             {
-                IntPtr pointer = (value == null ? Engine.NilValue : new InternalString(Engine, value)).DangerousGetHandle();
-                int offset = GetOffsetOf("pname");
+                var pointer = (value == null ? Engine.NilValue : new InternalString(Engine, value)).DangerousGetHandle();
+                var offset = GetOffsetOf("pname");
                 Marshal.WriteIntPtr(handle, offset, pointer);
             }
         }
@@ -45,11 +45,7 @@ namespace RDotNet
             get
             {
                 dynamic sexp = GetInternalStructure();
-                if (Engine.EqualsRNilValue((IntPtr)sexp.symsxp.value))
-                {
-                    return null;
-                }
-                return new SymbolicExpression(Engine, sexp.symsxp.@internal);
+                return Engine.EqualsRNilValue((IntPtr)sexp.symsxp.value) ? null : new SymbolicExpression(Engine, sexp.symsxp.@internal);
             }
         }
 
@@ -61,17 +57,13 @@ namespace RDotNet
             get
             {
                 dynamic sexp = GetInternalStructure();
-                if (Engine.EqualsRNilValue((IntPtr)sexp.symsxp.value))
-                {
-                    return null;
-                }
-                return new SymbolicExpression(Engine, sexp.symsxp.value);
+                return Engine.EqualsRNilValue((IntPtr)sexp.symsxp.value) ? null : new SymbolicExpression(Engine, sexp.symsxp.value);
             }
         }
 
         private int GetOffsetOf(string fieldName)
         {
-            return Marshal.OffsetOf(this.Engine.GetSEXPRECType(), "u").ToInt32() + Marshal.OffsetOf(this.Engine.GetSymSxpType(), fieldName).ToInt32();
+            return Marshal.OffsetOf(Engine.GetSEXPRECType(), "u").ToInt32() + Marshal.OffsetOf(Engine.GetSymSxpType(), fieldName).ToInt32();
         }
     }
 }

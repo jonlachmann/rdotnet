@@ -22,16 +22,16 @@ namespace RDotNet
         protected internal DynamicVector(REngine engine, IntPtr coerced)
             : base(engine, coerced)
         { }
-        
+
         /// <summary>
         /// Gets an array representation of a vector in R. Note that the implementation cannot be particularly "fast" in spite of the name.
         /// </summary>
         /// <returns></returns>
         protected override object[] GetArrayFast()
         {
-            var res = new object[this.Length];
-            bool useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
-            for (int i = 0; i < res.Length; i++)
+            var res = new object[Length];
+            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            for (var i = 0; i < res.Length; i++)
             {
                 res[i] = (useAltRep ? GetValueAltRep(i) : GetValue(i));
             }
@@ -57,8 +57,8 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override object GetValue(int index)
         {
-            IntPtr pointer = DataPointer;
-            int offset = GetOffset(index);
+            var pointer = DataPointer;
+            var offset = GetOffset(index);
             switch (Type)
             {
                 case SymbolicExpressionType.NumericVector:
@@ -67,8 +67,7 @@ namespace RDotNet
                 case SymbolicExpressionType.IntegerVector:
                     if (this.IsFactor())
                         return this.AsFactor().GetFactor(index);
-                    else
-                        return ReadInt32(pointer, offset);
+                    return ReadInt32(pointer, offset);
 
                 case SymbolicExpressionType.CharacterVector:
                     return ReadString(pointer, offset);
@@ -92,8 +91,8 @@ namespace RDotNet
         /// </summary>
         protected override void SetVectorDirect(object[] values)
         {
-            bool useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
-            for (int i = 0; i < values.Length; i++)
+            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            for (var i = 0; i < values.Length; i++)
             {
                 if (useAltRep)
                 {
@@ -124,8 +123,8 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValue(int index, object value)
         {
-            IntPtr pointer = DataPointer;
-            int offset = GetOffset(index);
+            var pointer = DataPointer;
+            var offset = GetOffset(index);
             switch (Type)
             {
                 case SymbolicExpressionType.NumericVector:
@@ -168,36 +167,23 @@ namespace RDotNet
         {
             get
             {
-                switch (Type)
+                return Type switch
                 {
-                    case SymbolicExpressionType.NumericVector:
-                        return sizeof(double);
-
-                    case SymbolicExpressionType.IntegerVector:
-                        return sizeof(int);
-
-                    case SymbolicExpressionType.CharacterVector:
-                        return Marshal.SizeOf(typeof(IntPtr));
-
-                    case SymbolicExpressionType.LogicalVector:
-                        return sizeof(int);
-
-                    case SymbolicExpressionType.RawVector:
-                        return sizeof(byte);
-
-                    case SymbolicExpressionType.ComplexVector:
-                        return Marshal.SizeOf(typeof(Complex));
-
-                    default:
-                        return Marshal.SizeOf(typeof(IntPtr));
-                }
+                    SymbolicExpressionType.NumericVector => sizeof(double),
+                    SymbolicExpressionType.IntegerVector => sizeof(int),
+                    SymbolicExpressionType.CharacterVector => Marshal.SizeOf(typeof(IntPtr)),
+                    SymbolicExpressionType.LogicalVector => sizeof(int),
+                    SymbolicExpressionType.RawVector => sizeof(byte),
+                    SymbolicExpressionType.ComplexVector => Marshal.SizeOf(typeof(Complex)),
+                    _ => Marshal.SizeOf(typeof(IntPtr))
+                };
             }
         }
 
         private double ReadDouble(IntPtr pointer, int offset)
         {
             var data = new byte[sizeof(double)];
-            for (int byteIndex = 0; byteIndex < data.Length; byteIndex++)
+            for (var byteIndex = 0; byteIndex < data.Length; byteIndex++)
             {
                 data[byteIndex] = Marshal.ReadByte(pointer, offset + byteIndex);
             }
@@ -206,8 +192,8 @@ namespace RDotNet
 
         private void WriteDouble(double value, IntPtr pointer, int offset)
         {
-            byte[] data = BitConverter.GetBytes(value);
-            for (int byteIndex = 0; byteIndex < data.Length; byteIndex++)
+            var data = BitConverter.GetBytes(value);
+            for (var byteIndex = 0; byteIndex < data.Length; byteIndex++)
             {
                 Marshal.WriteByte(pointer, offset + byteIndex, data[byteIndex]);
             }
@@ -226,33 +212,28 @@ namespace RDotNet
         private string ReadString(IntPtr pointer, int offset)
         {
             pointer = Marshal.ReadIntPtr(pointer, offset);
-            if (Engine.Compatibility == REngine.CompatibilityMode.ALTREP)
-            {
-                pointer = GetFunction<DATAPTR_OR_NULL>()(pointer);
-            }
-            else
-            {
-                pointer = IntPtr.Add(pointer, Marshal.SizeOf(Engine.GetVectorSexprecType()));
-            }
+            pointer = Engine.Compatibility == REngine.CompatibilityMode.ALTREP
+                ? GetFunction<DATAPTR_OR_NULL>()(pointer)
+                : IntPtr.Add(pointer, Marshal.SizeOf(Engine.GetVectorSexprecType()));
 
             return InternalString.StringFromNativeUtf8(pointer);
         }
 
         private void WriteString(string value, IntPtr pointer, int offset)
         {
-            IntPtr stringPointer = this.GetFunction<Rf_mkChar>()(value);
+            var stringPointer = GetFunction<Rf_mkChar>()(value);
             Marshal.WriteIntPtr(pointer, offset, stringPointer);
         }
 
         private bool ReadBoolean(IntPtr pointer, int offset)
         {
-            int data = Marshal.ReadInt32(pointer, offset);
+            var data = Marshal.ReadInt32(pointer, offset);
             return Convert.ToBoolean(data);
         }
 
         private void WriteBoolean(bool value, IntPtr pointer, int offset)
         {
-            int data = Convert.ToInt32(value);
+            var data = Convert.ToInt32(value);
             Marshal.WriteInt32(pointer, offset, data);
         }
 
@@ -270,15 +251,15 @@ namespace RDotNet
         {
             var data = new byte[Marshal.SizeOf(typeof(Complex))];
             Marshal.Copy(pointer, data, 0, data.Length);
-            double real = BitConverter.ToDouble(data, 0);
-            double imaginary = BitConverter.ToDouble(data, sizeof(double));
+            var real = BitConverter.ToDouble(data, 0);
+            var imaginary = BitConverter.ToDouble(data, sizeof(double));
             return new Complex(real, imaginary);
         }
 
         private void WriteComplex(Complex value, IntPtr pointer, int offset)
         {
-            byte[] real = BitConverter.GetBytes(value.Real);
-            byte[] imaginary = BitConverter.GetBytes(value.Imaginary);
+            var real = BitConverter.GetBytes(value.Real);
+            var imaginary = BitConverter.GetBytes(value.Imaginary);
             Marshal.Copy(real, 0, pointer, real.Length);
             pointer = IntPtr.Add(pointer, real.Length);
             Marshal.Copy(imaginary, 0, pointer, imaginary.Length);
@@ -286,7 +267,7 @@ namespace RDotNet
 
         private SymbolicExpression ReadSymbolicExpression(IntPtr pointer, int offset)
         {
-            IntPtr sexp = IntPtr.Add(pointer, offset);
+            var sexp = IntPtr.Add(pointer, offset);
             return new SymbolicExpression(Engine, sexp);
         }
 

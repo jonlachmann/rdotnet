@@ -4,11 +4,11 @@ namespace RDotNet.Diagnostics
 {
     internal class VectorDebugView<T>
     {
-        private readonly Vector<T> vector;
+        private readonly Vector<T> _vector;
 
         public VectorDebugView(Vector<T> vector)
         {
-            this.vector = vector;
+            _vector = vector;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -16,8 +16,8 @@ namespace RDotNet.Diagnostics
         {
             get
             {
-                var array = new T[this.vector.Length];
-                this.vector.CopyTo(array, array.Length);
+                var array = new T[_vector.Length];
+                _vector.CopyTo(array, array.Length);
                 return array;
             }
         }

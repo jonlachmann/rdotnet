@@ -17,11 +17,11 @@ namespace RDotNet.Utilities
         /// <returns></returns>
         public static U[,] ArrayConvertAll<T, U>(T[,] array, Func<T, U> fun)
         {
-            int rows = array.GetLength(0);
-            int cols = array.GetLength(1);
-            U[,] res = new U[rows, cols];
-            for (int i = 0; i < rows; i++) // TODO: what is the best indexing order to avoid memory cache misses, rowfirst or colfirst?
-                for (int j = 0; j < cols; j++)
+            var rows = array.GetLength(0);
+            var cols = array.GetLength(1);
+            var res = new U[rows, cols];
+            for (var i = 0; i < rows; i++) // TODO: what is the best indexing order to avoid memory cache misses, rowfirst or colfirst?
+                for (var j = 0; j < cols; j++)
                     res[i, j] = fun(array[i, j]);
             return res;
         }
@@ -36,18 +36,17 @@ namespace RDotNet.Utilities
         /// <returns></returns>
         public static U[][] ArrayConvertAll<T, U>(T[][] array, Func<T, U> fun)
         {
-            int rows = array.Length;
-            int cols = 0;
+            var rows = array.Length;
+            var cols = 0;
             if (rows == 0)
                 return CreateMatrixJagged<U>(rows, cols);
-            else
-                cols = array[0].Length;
-            U[][] res = CreateMatrixJagged<U>(rows, cols);
-            for (int i = 0; i < rows; i++)
+            cols = array[0].Length;
+            var res = CreateMatrixJagged<U>(rows, cols);
+            for (var i = 0; i < rows; i++)
             {
                 if (array[i].Length != cols)
                     throw new ArgumentException("Each element of the input jagged array must have the same length. Failed for index " + i.ToString());
-                for (int j = 0; j < cols; j++)
+                for (var j = 0; j < cols; j++)
                     res[i][j] = fun(array[i][j]);
             }
             return res;
@@ -63,7 +62,7 @@ namespace RDotNet.Utilities
         public static T[][] CreateMatrixJagged<T>(int outerDim, int innerDim)
         {
             var result = new T[outerDim][];
-            for (int i = 0; i < outerDim; i++)
+            for (var i = 0; i < outerDim; i++)
                 result[i] = new T[innerDim];
             return result;
         }
@@ -79,11 +78,11 @@ namespace RDotNet.Utilities
         /// <returns></returns>
         public static U[] ArrayConvertAllOneDim<T, U>(T[,] array, Func<T, U> fun)
         {
-            int rows = array.GetLength(0);
-            int cols = array.GetLength(1);
-            U[] res = new U[rows * cols];
-            for (int i = 0; i < rows; i++)
-                for (int j = 0; j < cols; j++)
+            var rows = array.GetLength(0);
+            var cols = array.GetLength(1);
+            var res = new U[rows * cols];
+            for (var i = 0; i < rows; i++)
+                for (var j = 0; j < cols; j++)
                     res[rows * j + i] = fun(array[i, j]);
             return res;
         }
@@ -117,9 +116,9 @@ namespace RDotNet.Utilities
             if (cols < 0) throw new ArgumentException("negative number for column numbers");
             if (rows < 0) throw new ArgumentException("negative number for row numbers");
             if (array.Length < (rows * cols)) throw new ArgumentException("input array has less than rows*cols elements");
-            U[,] res = new U[rows, cols];
-            for (int i = 0; i < rows; i++)
-                for (int j = 0; j < cols; j++)
+            var res = new U[rows, cols];
+            for (var i = 0; i < rows; i++)
+                for (var j = 0; j < cols; j++)
                     res[i, j] = fun(array[rows * j + i]);
             return res;
         }
@@ -150,7 +149,7 @@ namespace RDotNet.Utilities
         public static T[] Subset<T>(T[] array, int from, int to)
         {
             if (from > to) throw new ArgumentException("Inconsistent subset: from > to");
-            int count = (to - from) + 1;
+            var count = (to - from) + 1;
             var res = new T[count];
             Array.Copy(array, from, res, 0, count);
             return res;

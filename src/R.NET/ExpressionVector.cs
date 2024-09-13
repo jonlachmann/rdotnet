@@ -25,9 +25,9 @@ namespace RDotNet
         /// <returns></returns>
         protected override Expression[] GetArrayFast()
         {
-            var res = new Expression[this.Length];
-            bool useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
-            for (int i = 0; i < res.Length; i++)
+            var res = new Expression[Length];
+            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            for (var i = 0; i < res.Length; i++)
             {
                 res[i] = (useAltRep ? GetValueAltRep(i) : GetValue(i));
             }
@@ -42,8 +42,8 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override Expression GetValue(int index)
         {
-            int offset = GetOffset(index);
-            IntPtr pointer = Marshal.ReadIntPtr(DataPointer, offset);
+            var offset = GetOffset(index);
+            var pointer = Marshal.ReadIntPtr(DataPointer, offset);
             return new Expression(Engine, pointer);
         }
 
@@ -66,7 +66,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValue(int index, Expression value)
         {
-            int offset = GetOffset(index);
+            var offset = GetOffset(index);
             Marshal.WriteIntPtr(DataPointer, offset, (value ?? Engine.NilValue).DangerousGetHandle());
         }
 
@@ -86,8 +86,8 @@ namespace RDotNet
         /// </summary>
         protected override void SetVectorDirect(Expression[] values)
         {
-            bool useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
-            for (int i = 0; i < values.Length; i++)
+            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            for (var i = 0; i < values.Length; i++)
             {
                 if (useAltRep)
                 {
@@ -103,9 +103,6 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of a pointer in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return Marshal.SizeOf(typeof(IntPtr)); }
-        }
+        protected override int DataSize => Marshal.SizeOf(typeof(IntPtr));
     }
 }

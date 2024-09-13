@@ -64,7 +64,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override int GetValue(int index)
         {
-            int offset = GetOffset(index);
+            var offset = GetOffset(index);
             return Marshal.ReadInt32(DataPointer, offset);
         }
 
@@ -76,7 +76,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override int GetValueAltRep(int index)
         {
-            return GetFunction<INTEGER_ELT>()(this.DangerousGetHandle(), (IntPtr)index);
+            return GetFunction<INTEGER_ELT>()(DangerousGetHandle(), index);
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValue(int index, int value)
         {
-            int offset = GetOffset(index);
+            var offset = GetOffset(index);
             Marshal.WriteInt32(DataPointer, offset, value);
         }
 
@@ -99,7 +99,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValueAltRep(int index, int value)
         {
-            GetFunction<SET_INTEGER_ELT>()(this.DangerousGetHandle(), (IntPtr)index, value);
+            GetFunction<SET_INTEGER_ELT>()(DangerousGetHandle(), index, value);
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace RDotNet
         /// <returns>Array equivalent</returns>
         protected override int[] GetArrayFast()
         {
-            var res = new int[this.Length];
+            var res = new int[Length];
             Marshal.Copy(DataPointer, res, 0, res.Length);
             return res;
         }
@@ -121,8 +121,8 @@ namespace RDotNet
         public override int[] GetAltRepArray()
         {
             // by inference from `static SEXP compact_intseq_Duplicate(SEXP x, Rboolean deep)`  in altrep.c
-            var res = new int[this.Length];
-            GetFunction<INTEGER_GET_REGION>()(this.DangerousGetHandle(), (IntPtr)0, (IntPtr)this.Length, res);
+            var res = new int[Length];
+            GetFunction<INTEGER_GET_REGION>()(DangerousGetHandle(), 0, Length, res);
             return res;
         }
 
@@ -138,10 +138,7 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of an integer in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return sizeof(int); }
-        }
+        protected override int DataSize => sizeof(int);
 
         /// <summary>
         /// Copies the elements to the specified array.
@@ -152,10 +149,7 @@ namespace RDotNet
         /// <param name="destinationIndex">The first index of the destination array.</param>
         public new void CopyTo(int[] destination, int length, int sourceIndex = 0, int destinationIndex = 0)
         {
-            if (destination == null)
-            {
-                throw new ArgumentNullException("destination");
-            }
+            ArgumentNullException.ThrowIfNull(destination);
             if (length < 0)
             {
                 throw new IndexOutOfRangeException("length");
@@ -169,14 +163,14 @@ namespace RDotNet
                 throw new IndexOutOfRangeException("destinationIndex");
             }
 
-            int offset = GetOffset(sourceIndex);
-            IntPtr pointer = IntPtr.Add(DataPointer, offset);
+            var offset = GetOffset(sourceIndex);
+            var pointer = IntPtr.Add(DataPointer, offset);
             Marshal.Copy(pointer, destination, destinationIndex, length);
         }
 
         /// <summary>
         /// Gets the code used for NA for integer vectors
         /// </summary>
-        protected int NACode { get { return int.MinValue; } }
+        protected int NACode => int.MinValue;
     }
 }

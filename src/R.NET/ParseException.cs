@@ -16,8 +16,8 @@ namespace RDotNet
         private const string StatusFieldName = "status";
 
         private const string ErrorStatementFieldName = "errorStatement";
-        private readonly string errorStatement;
-        private readonly ParseStatus status;
+        private readonly string _errorStatement;
+        private readonly ParseStatus _status;
 
         /// <summary>
         /// Creates a new instance.
@@ -36,8 +36,8 @@ namespace RDotNet
         public ParseException(ParseStatus status, string errorStatement, string errorMsg)
             : base(MakeErrorMsg(status, errorStatement, errorMsg))
         {
-            this.status = status;
-            this.errorStatement = errorStatement;
+            _status = status;
+            _errorStatement = errorStatement;
         }
 
         private static string MakeErrorMsg(ParseStatus status, string errorStatement, string errorMsg)
@@ -53,25 +53,19 @@ namespace RDotNet
         protected ParseException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            this.status = (ParseStatus)info.GetValue(StatusFieldName, typeof(ParseStatus));
-            this.errorStatement = info.GetString(ErrorStatementFieldName);
+            _status = (ParseStatus)info.GetValue(StatusFieldName, typeof(ParseStatus));
+            _errorStatement = info.GetString(ErrorStatementFieldName);
         }
 
         /// <summary>
         /// The error.
         /// </summary>
-        public ParseStatus Status
-        {
-            get { return this.status; }
-        }
+        public ParseStatus Status => _status;
 
         /// <summary>
         /// The statement caused the error.
         /// </summary>
-        public string ErrorStatement
-        {
-            get { return this.errorStatement; }
-        }
+        public string ErrorStatement => _errorStatement;
 
         /// <summary>
         /// Sets the serialization info about the exception thrown
@@ -81,8 +75,8 @@ namespace RDotNet
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-            info.AddValue(StatusFieldName, this.status);
-            info.AddValue(ErrorStatementFieldName, this.errorStatement);
+            info.AddValue(StatusFieldName, _status);
+            info.AddValue(ErrorStatementFieldName, _errorStatement);
         }
     }
 }

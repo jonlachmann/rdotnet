@@ -88,7 +88,7 @@ namespace RDotNet
         private ProtectedPointer evaluateCall(IntPtr call)
         {
             ProtectedPointer result;
-            bool errorOccurred = false;
+            bool errorOccurred;
             try
             {
                 result = new ProtectedPointer(Engine, Engine.GetFunction<R_tryEval>()(call, Engine.GlobalEnvironment.DangerousGetHandle(), out errorOccurred));
@@ -109,23 +109,19 @@ namespace RDotNet
         /// <returns>The result of the function evaluation.</returns>
         protected SymbolicExpression InvokeOrderedArguments(SymbolicExpression[] args)
         {
-            IntPtr argument = Engine.NilValue.DangerousGetHandle();
-            foreach (SymbolicExpression arg in args.Reverse())
+            var argument = Engine.NilValue.DangerousGetHandle();
+            foreach (var arg in args.Reverse())
             {
-                argument = this.GetFunction<Rf_cons>()(arg.DangerousGetHandle(), argument);
+                argument = GetFunction<Rf_cons>()(arg.DangerousGetHandle(), argument);
             }
             return createCallAndEvaluate(argument);
         }
 
         private SymbolicExpression createCallAndEvaluate(IntPtr argument)
         {
-            using (var call = new ProtectedPointer(Engine, this.GetFunction<Rf_lcons>()(handle, argument)))
-            {
-                using (var result = evaluateCall(call))
-                {
-                    return new SymbolicExpression(Engine, result);
-                }
-            }
+            using var call = new ProtectedPointer(Engine, this.GetFunction<Rf_lcons>()(handle, argument));
+            using var result = evaluateCall(call);
+            return new SymbolicExpression(Engine, result);
         }
 
         /// <summary>
@@ -136,7 +132,7 @@ namespace RDotNet
         /// <returns>The result of the function evaluation</returns>
         private SymbolicExpression InvokeNamedFast(params Tuple<string, SymbolicExpression>[] args)
         {
-            IntPtr argument = Engine.NilValue.DangerousGetHandle();
+            var argument = Engine.NilValue.DangerousGetHandle();
             var rfInstall = GetFunction<Rf_install>();
             var rSetTag = GetFunction<SET_TAG>();
             var rfCons = GetFunction<Rf_cons>();
@@ -144,7 +140,7 @@ namespace RDotNet
             {
                 var sexp = arg.Item2;
                 argument = rfCons(sexp.DangerousGetHandle(), argument);
-                string name = arg.Item1;
+                var name = arg.Item1;
                 if (!string.IsNullOrEmpty(name))
                 {
                     rSetTag(argument, rfInstall(name));

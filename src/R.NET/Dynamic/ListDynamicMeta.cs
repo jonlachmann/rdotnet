@@ -10,7 +10,7 @@ namespace RDotNet.Dynamic
     /// </summary>
     public class ListDynamicMeta : SymbolicExpressionDynamicMeta
     {
-        private static readonly Type[] IndexerNameType = new[] { typeof(string) };
+        private static readonly Type[] IndexerNameType = { typeof(string) };
 
         /// <summary>
         /// Creates a new object dealing with the dynamic and binding logic for R lists
@@ -39,11 +39,7 @@ namespace RDotNet.Dynamic
         /// <returns>The new System.Dynamic.DynamicMetaObject representing the result of the binding.</returns>
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
         {
-            if (!GetNames().Contains(binder.Name))
-            {
-                return base.BindGetMember(binder);
-            }
-            return BindGetMember<GenericVector, SymbolicExpression>(binder, IndexerNameType);
+            return !GetNames().Contains(binder.Name) ? base.BindGetMember(binder) : BindGetMember<GenericVector, SymbolicExpression>(binder, IndexerNameType);
         }
 
         private string[] GetNames()

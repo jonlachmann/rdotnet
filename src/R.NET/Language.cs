@@ -24,7 +24,7 @@ namespace RDotNet
         {
             get
             {
-                int count = this.GetFunction<Rf_length>()(handle);
+                var count = GetFunction<Rf_length>()(handle);
                 // count == 1 for empty call.
                 if (count < 2)
                 {

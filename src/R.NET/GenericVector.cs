@@ -49,8 +49,8 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override SymbolicExpression GetValue(int index)
         {
-            int offset = GetOffset(index);
-            IntPtr pointer = Marshal.ReadIntPtr(DataPointer, offset);
+            var offset = GetOffset(index);
+            var pointer = Marshal.ReadIntPtr(DataPointer, offset);
             return new SymbolicExpression(Engine, pointer);
         }
 
@@ -73,7 +73,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValue(int index, SymbolicExpression value)
         {
-            int offset = GetOffset(index);
+            var offset = GetOffset(index);
             Marshal.WriteIntPtr(DataPointer, offset, (value ?? Engine.NilValue).DangerousGetHandle());
         }
 
@@ -94,9 +94,9 @@ namespace RDotNet
         /// <returns>Array equivalent</returns>
         protected override SymbolicExpression[] GetArrayFast()
         {
-            var res = new SymbolicExpression[this.Length];
-            bool useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
-            for (int i = 0; i < res.Length; i++)
+            var res = new SymbolicExpression[Length];
+            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            for (var i = 0; i < res.Length; i++)
             {
                 res[i] = (useAltRep ? GetValueAltRep(i) : GetValue(i));
             }
@@ -108,8 +108,8 @@ namespace RDotNet
         /// </summary>
         protected override void SetVectorDirect(SymbolicExpression[] values)
         {
-            bool useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
-            for (int i = 0; i < values.Length; i++)
+            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            for (var i = 0; i < values.Length; i++)
             {
                 if (useAltRep)
                 {
@@ -125,10 +125,7 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of each item in this vector
         /// </summary>
-        protected override int DataSize
-        {
-            get { return Marshal.SizeOf(typeof(IntPtr)); }
-        }
+        protected override int DataSize => Marshal.SizeOf(typeof(IntPtr));
 
         /// <summary>
         /// Converts into a <see cref="RDotNet.Pairlist"/>.
@@ -136,7 +133,7 @@ namespace RDotNet
         /// <returns>The pairlist.</returns>
         public Pairlist ToPairlist()
         {
-            return new Pairlist(Engine, this.GetFunction<Rf_VectorToPairList>()(handle));
+            return new Pairlist(Engine, GetFunction<Rf_VectorToPairList>()(handle));
         }
 
         /// <summary>
@@ -154,7 +151,7 @@ namespace RDotNet
         /// <param name="names"> A variable-length parameters list containing names.</param>
         public void SetNames(params string[] names)
         {
-            CharacterVector cv = new CharacterVector(this.Engine, names);
+            var cv = new CharacterVector(Engine, names);
             SetNames(cv);
         }
 
@@ -165,11 +162,11 @@ namespace RDotNet
         /// <param name="names"> A variable-length parameters list containing names.</param>
         public void SetNames(CharacterVector names)
         {
-            if (names.Length != this.Length)
+            if (names.Length != Length)
             {
                 throw new ArgumentException("Names vector must be same length as list");
             }
-            SymbolicExpression namesSymbol = Engine.GetPredefinedSymbol("R_NamesSymbol");
+            var namesSymbol = Engine.GetPredefinedSymbol("R_NamesSymbol");
             SetAttribute(namesSymbol, names);
         }
     }

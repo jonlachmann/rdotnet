@@ -17,14 +17,11 @@ namespace RDotNet
         /// <returns><c>True</c> if the specified expression is list.</returns>
         public static bool IsList(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             // See issue 81. Rf_isList in the R API is NOT the correct thing to use (yes, hard to be more conter-intuitive)
-            return (expression.Type == SymbolicExpressionType.List ||
-                // ?is.list ==> "is.list returns TRUE if and only if its argument is a list or a pairlist of length > 0"
-               (expression.Type == SymbolicExpressionType.Pairlist && expression.GetFunction<Rf_length>()(expression.DangerousGetHandle()) > 0));
+            return expression.Type == SymbolicExpressionType.List ||
+                   // ?is.list ==> "is.list returns TRUE if and only if its argument is a list or a pairlist of length > 0"
+                   (expression.Type == SymbolicExpressionType.Pairlist && expression.GetFunction<Rf_length>()(expression.DangerousGetHandle()) > 0);
         }
 
         /// <summary>
@@ -40,20 +37,19 @@ namespace RDotNet
         /// <summary>
         /// A cache of the REngine - WARNING this assumes there can be only one per process, initialised once only.
         /// </summary>
-        private static REngine engine = null;
+        private static REngine _engine = null;
 
-        private static Function asListFunction = null;
+        private static Function _asListFunction = null;
 
         private static GenericVector asList(SymbolicExpression expression)
         {
-            if (!object.ReferenceEquals(engine, expression.Engine) || engine == null)
+            if (!ReferenceEquals(_engine, expression.Engine) || _engine == null)
             {
-                engine = expression.Engine;
-                asListFunction = null;
+                _engine = expression.Engine;
+                _asListFunction = null;
             }
-            if (asListFunction == null)
-                asListFunction = engine.Evaluate("invisible(as.list)").AsFunction();
-            var newExpression = asListFunction.Invoke(expression);
+            _asListFunction ??= _engine.Evaluate("invisible(as.list)").AsFunction();
+            var newExpression = _asListFunction.Invoke(expression);
             return new GenericVector(newExpression.Engine, newExpression.DangerousGetHandle());
         }
 
@@ -64,10 +60,7 @@ namespace RDotNet
         /// <returns><c>True</c> if the specified expression is data frame.</returns>
         public static bool IsDataFrame(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             return expression.GetFunction<Rf_isFrame>()(expression.DangerousGetHandle());
         }
 
@@ -78,11 +71,7 @@ namespace RDotNet
         /// <returns>The DataFrame. Returns <c>null</c> if the specified expression is not vector.</returns>
         public static DataFrame AsDataFrame(this SymbolicExpression expression)
         {
-            if (!expression.IsDataFrame())
-            {
-                return null;
-            }
-            return new DataFrame(expression.Engine, expression.DangerousGetHandle());
+            return !expression.IsDataFrame() ? null : new DataFrame(expression.Engine, expression.DangerousGetHandle());
         }
 
         /// <summary>
@@ -92,10 +81,7 @@ namespace RDotNet
         /// <returns><c>True</c> if the specified expression is an S4 object.</returns>
         public static bool IsS4(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             return expression.GetFunction<Rf_isS4>()(expression.DangerousGetHandle());
         }
 
@@ -106,11 +92,7 @@ namespace RDotNet
         /// <returns>The DataFrame. Returns <c>null</c> if the specified expression is not vector.</returns>
         public static S4Object AsS4(this SymbolicExpression expression)
         {
-            if (!expression.IsS4())
-            {
-                return null;
-            }
-            return new S4Object(expression.Engine, expression.DangerousGetHandle());
+            return !expression.IsS4() ? null : new S4Object(expression.Engine, expression.DangerousGetHandle());
         }
 
         /// <summary>
@@ -120,10 +102,7 @@ namespace RDotNet
         /// <returns><c>True</c> if the specified expression is vector.</returns>
         public static bool IsVector(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             return expression.GetFunction<Rf_isVector>()(expression.DangerousGetHandle());
         }
 
@@ -134,11 +113,8 @@ namespace RDotNet
         /// <returns>The DynamicVector. Returns <c>null</c> if the specified expression is not vector.</returns>
         public static DynamicVector AsVector(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), expression.Type);
+            ArgumentNullException.ThrowIfNull(expression);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), expression.Type);
             return new DynamicVector(expression.Engine, coerced);
         }
 
@@ -153,7 +129,7 @@ namespace RDotNet
             {
                 return null;
             }
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.LogicalVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.LogicalVector);
             return new LogicalVector(expression.Engine, coerced);
         }
 
@@ -168,7 +144,7 @@ namespace RDotNet
             {
                 return null;
             }
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.IntegerVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.IntegerVector);
             return new IntegerVector(expression.Engine, coerced);
         }
 
@@ -183,7 +159,7 @@ namespace RDotNet
             {
                 return null;
             }
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.NumericVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.NumericVector);
             return new NumericVector(expression.Engine, coerced);
         }
 
@@ -198,11 +174,11 @@ namespace RDotNet
             {
                 return null;
             }
-            IntPtr coerced = IntPtr.Zero;
-            if (expression.IsFactor())
-                coerced = expression.GetFunction<Rf_asCharacterFactor>()(expression.DangerousGetHandle());
-            else
-                coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.CharacterVector);
+
+            var coerced = expression.IsFactor()
+                ? expression.GetFunction<Rf_asCharacterFactor>()(expression.DangerousGetHandle())
+                : expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(),
+                    SymbolicExpressionType.CharacterVector);
             return new CharacterVector(expression.Engine, coerced);
         }
 
@@ -217,7 +193,7 @@ namespace RDotNet
             {
                 return null;
             }
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.ComplexVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.ComplexVector);
             return new ComplexVector(expression.Engine, coerced);
         }
 
@@ -232,7 +208,7 @@ namespace RDotNet
             {
                 return null;
             }
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.RawVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.RawVector);
             return new RawVector(expression.Engine, coerced);
         }
 
@@ -243,10 +219,7 @@ namespace RDotNet
         /// <returns><c>True</c> if the specified expression is matrix.</returns>
         public static bool IsMatrix(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             return expression.GetFunction<Rf_isMatrix>()(expression.DangerousGetHandle());
         }
 
@@ -262,8 +235,8 @@ namespace RDotNet
                 return null;
             }
 
-            int rowCount = 0;
-            int columnCount = 0;
+            var rowCount = 0;
+            var columnCount = 0;
 
             if (expression.IsMatrix())
             {
@@ -271,11 +244,8 @@ namespace RDotNet
                 {
                     return new LogicalMatrix(expression.Engine, expression.DangerousGetHandle());
                 }
-                else
-                {
-                    rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
-                    columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
-                }
+                rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
+                columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
             }
 
             if (columnCount == 0)
@@ -284,9 +254,9 @@ namespace RDotNet
                 columnCount = 1;
             }
 
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.LogicalVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.LogicalVector);
             var dim = new IntegerVector(expression.Engine, new[] { rowCount, columnCount });
-            SymbolicExpression dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
+            var dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
             var matrix = new LogicalMatrix(expression.Engine, coerced);
             matrix.SetAttribute(dimSymbol, dim);
             return matrix;
@@ -304,8 +274,8 @@ namespace RDotNet
                 return null;
             }
 
-            int rowCount = 0;
-            int columnCount = 0;
+            var rowCount = 0;
+            var columnCount = 0;
 
             if (expression.IsMatrix())
             {
@@ -313,11 +283,8 @@ namespace RDotNet
                 {
                     return new IntegerMatrix(expression.Engine, expression.DangerousGetHandle());
                 }
-                else
-                {
-                    rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
-                    columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
-                }
+                rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
+                columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
             }
 
             if (columnCount == 0)
@@ -326,9 +293,9 @@ namespace RDotNet
                 columnCount = 1;
             }
 
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.IntegerVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.IntegerVector);
             var dim = new IntegerVector(expression.Engine, new[] { rowCount, columnCount });
-            SymbolicExpression dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
+            var dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
             var matrix = new IntegerMatrix(expression.Engine, coerced);
             matrix.SetAttribute(dimSymbol, dim);
             return matrix;
@@ -346,8 +313,8 @@ namespace RDotNet
                 return null;
             }
 
-            int rowCount = 0;
-            int columnCount = 0;
+            var rowCount = 0;
+            var columnCount = 0;
 
             if (expression.IsMatrix())
             {
@@ -355,11 +322,8 @@ namespace RDotNet
                 {
                     return new NumericMatrix(expression.Engine, expression.DangerousGetHandle());
                 }
-                else
-                {
-                    rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
-                    columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
-                }
+                rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
+                columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
             }
 
             if (columnCount == 0)
@@ -368,9 +332,9 @@ namespace RDotNet
                 columnCount = 1;
             }
 
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.NumericVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.NumericVector);
             var dim = new IntegerVector(expression.Engine, new[] { rowCount, columnCount });
-            SymbolicExpression dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
+            var dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
             var matrix = new NumericMatrix(expression.Engine, coerced);
             matrix.SetAttribute(dimSymbol, dim);
             return matrix;
@@ -388,8 +352,8 @@ namespace RDotNet
                 return null;
             }
 
-            int rowCount = 0;
-            int columnCount = 0;
+            var rowCount = 0;
+            var columnCount = 0;
 
             if (expression.IsMatrix())
             {
@@ -397,11 +361,8 @@ namespace RDotNet
                 {
                     return new CharacterMatrix(expression.Engine, expression.DangerousGetHandle());
                 }
-                else
-                {
-                    rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
-                    columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
-                }
+                rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
+                columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
             }
 
             if (columnCount == 0)
@@ -410,9 +371,9 @@ namespace RDotNet
                 columnCount = 1;
             }
 
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.CharacterVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.CharacterVector);
             var dim = new IntegerVector(expression.Engine, new[] { rowCount, columnCount });
-            SymbolicExpression dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
+            var dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
             var matrix = new CharacterMatrix(expression.Engine, coerced);
             matrix.SetAttribute(dimSymbol, dim);
             return matrix;
@@ -430,8 +391,8 @@ namespace RDotNet
                 return null;
             }
 
-            int rowCount = 0;
-            int columnCount = 0;
+            var rowCount = 0;
+            var columnCount = 0;
 
             if (expression.IsMatrix())
             {
@@ -452,9 +413,9 @@ namespace RDotNet
                 columnCount = 1;
             }
 
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.ComplexVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.ComplexVector);
             var dim = new IntegerVector(expression.Engine, new[] { rowCount, columnCount });
-            SymbolicExpression dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
+            var dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
             var matrix = new ComplexMatrix(expression.Engine, coerced);
             matrix.SetAttribute(dimSymbol, dim);
             return matrix;
@@ -472,8 +433,8 @@ namespace RDotNet
                 return null;
             }
 
-            int rowCount = 0;
-            int columnCount = 0;
+            var rowCount = 0;
+            var columnCount = 0;
 
             if (expression.IsMatrix())
             {
@@ -481,11 +442,8 @@ namespace RDotNet
                 {
                     return new RawMatrix(expression.Engine, expression.DangerousGetHandle());
                 }
-                else
-                {
-                    rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
-                    columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
-                }
+                rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
+                columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
             }
 
             if (columnCount == 0)
@@ -494,9 +452,9 @@ namespace RDotNet
                 columnCount = 1;
             }
 
-            IntPtr coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.RawVector);
+            var coerced = expression.GetFunction<Rf_coerceVector>()(expression.DangerousGetHandle(), SymbolicExpressionType.RawVector);
             var dim = new IntegerVector(expression.Engine, new[] { rowCount, columnCount });
-            SymbolicExpression dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
+            var dimSymbol = expression.Engine.GetPredefinedSymbol("R_DimSymbol");
             var matrix = new RawMatrix(expression.Engine, coerced);
             matrix.SetAttribute(dimSymbol, dim);
             return matrix;
@@ -509,10 +467,7 @@ namespace RDotNet
         /// <returns><c>True</c> if it is an environment.</returns>
         public static bool IsEnvironment(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             return expression.GetFunction<Rf_isEnvironment>()(expression.DangerousGetHandle());
         }
 
@@ -523,11 +478,7 @@ namespace RDotNet
         /// <returns>The environment.</returns>
         public static REnvironment AsEnvironment(this SymbolicExpression expression)
         {
-            if (!expression.IsEnvironment())
-            {
-                return null;
-            }
-            return new REnvironment(expression.Engine, expression.DangerousGetHandle());
+            return !expression.IsEnvironment() ? null : new REnvironment(expression.Engine, expression.DangerousGetHandle());
         }
 
         /// <summary>
@@ -537,10 +488,7 @@ namespace RDotNet
         /// <returns><c>True</c> if it is an expression.</returns>
         public static bool IsExpression(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             return expression.GetFunction<Rf_isExpression>()(expression.DangerousGetHandle());
         }
 
@@ -551,11 +499,7 @@ namespace RDotNet
         /// <returns>The expression.</returns>
         public static Expression AsExpression(this SymbolicExpression expression)
         {
-            if (!expression.IsExpression())
-            {
-                return null;
-            }
-            return new Expression(expression.Engine, expression.DangerousGetHandle());
+            return !expression.IsExpression() ? null : new Expression(expression.Engine, expression.DangerousGetHandle());
         }
 
         /// <summary>
@@ -565,10 +509,7 @@ namespace RDotNet
         /// <returns><c>True</c> if it is a symbol.</returns>
         public static bool IsSymbol(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             return expression.GetFunction<Rf_isSymbol>()(expression.DangerousGetHandle());
         }
 
@@ -579,11 +520,7 @@ namespace RDotNet
         /// <returns>The symbol.</returns>
         public static Symbol AsSymbol(this SymbolicExpression expression)
         {
-            if (!expression.IsSymbol())
-            {
-                return null;
-            }
-            return new Symbol(expression.Engine, expression.DangerousGetHandle());
+            return !expression.IsSymbol() ? null : new Symbol(expression.Engine, expression.DangerousGetHandle());
         }
 
         /// <summary>
@@ -593,10 +530,7 @@ namespace RDotNet
         /// <returns><c>True</c> if it is a language.</returns>
         public static bool IsLanguage(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             return expression.GetFunction<Rf_isLanguage>()(expression.DangerousGetHandle());
         }
 
@@ -607,11 +541,7 @@ namespace RDotNet
         /// <returns>The language.</returns>
         public static Language AsLanguage(this SymbolicExpression expression)
         {
-            if (!expression.IsLanguage())
-            {
-                return null;
-            }
-            return new Language(expression.Engine, expression.DangerousGetHandle());
+            return !expression.IsLanguage() ? null : new Language(expression.Engine, expression.DangerousGetHandle());
         }
 
         /// <summary>
@@ -621,10 +551,7 @@ namespace RDotNet
         /// <returns><c>True</c> if it is a function.</returns>
         public static bool IsFunction(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             return expression.GetFunction<Rf_isFunction>()(expression.DangerousGetHandle());
         }
 
@@ -635,20 +562,15 @@ namespace RDotNet
         /// <returns>The function.</returns>
         public static Function AsFunction(this SymbolicExpression expression)
         {
-            switch (expression.Type)
+            return expression.Type switch
             {
-                case SymbolicExpressionType.Closure:
-                    return new Closure(expression.Engine, expression.DangerousGetHandle());
-
-                case SymbolicExpressionType.BuiltinFunction:
-                    return new BuiltinFunction(expression.Engine, expression.DangerousGetHandle());
-
-                case SymbolicExpressionType.SpecialFunction:
-                    return new SpecialFunction(expression.Engine, expression.DangerousGetHandle());
-
-                default:
-                    throw new ArgumentException();
-            }
+                SymbolicExpressionType.Closure => new Closure(expression.Engine, expression.DangerousGetHandle()),
+                SymbolicExpressionType.BuiltinFunction => new BuiltinFunction(expression.Engine,
+                    expression.DangerousGetHandle()),
+                SymbolicExpressionType.SpecialFunction => new SpecialFunction(expression.Engine,
+                    expression.DangerousGetHandle()),
+                _ => throw new ArgumentException()
+            };
         }
 
         /// <summary>
@@ -658,10 +580,7 @@ namespace RDotNet
         /// <returns><c>True</c> if the specified expression is factor.</returns>
         public static bool IsFactor(this SymbolicExpression expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(expression);
             var handle = expression.DangerousGetHandle();
             return expression.GetFunction<Rf_isFactor>()(handle);
         }
@@ -675,7 +594,7 @@ namespace RDotNet
         {
             if (!IsFactor(expression))
             {
-                throw new ArgumentException("Not a factor.", "expression");
+                throw new ArgumentException("Not a factor.", nameof(expression));
             }
             return new Factor(expression.Engine, expression.DangerousGetHandle());
         }

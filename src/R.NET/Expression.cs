@@ -24,10 +24,7 @@ namespace RDotNet
         /// <returns>The evaluation result.</returns>
         public SymbolicExpression Evaluate(REnvironment environment)
         {
-            if (environment == null)
-            {
-                throw new ArgumentNullException("environment");
-            }
+            ArgumentNullException.ThrowIfNull(environment);
             if (Engine != environment.Engine)
             {
                 throw new ArgumentException(null, "environment");
@@ -44,17 +41,13 @@ namespace RDotNet
         /// <returns><c>True</c> if the evaluation succeeded.</returns>
         public bool TryEvaluate(REnvironment environment, out SymbolicExpression result)
         {
-            if (environment == null)
-            {
-                throw new ArgumentNullException("environment");
-            }
+            ArgumentNullException.ThrowIfNull(environment);
             if (Engine != environment.Engine)
             {
-                throw new ArgumentException(null, "environment");
+                throw new ArgumentException(null, nameof(environment));
             }
 
-            bool errorOccurred;
-            IntPtr pointer = this.GetFunction<R_tryEval>()(handle, environment.DangerousGetHandle(), out errorOccurred);
+            var pointer = GetFunction<R_tryEval>()(handle, environment.DangerousGetHandle(), out var errorOccurred);
             result = errorOccurred ? null : new SymbolicExpression(Engine, pointer);
             return !errorOccurred;
         }

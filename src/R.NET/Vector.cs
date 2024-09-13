@@ -29,10 +29,7 @@ namespace RDotNet
         protected Vector(REngine engine, SymbolicExpressionType type, int length)
             : base(engine, engine.GetFunction<Rf_allocVector>()(type, length))
         {
-            if (length <= 0)
-            {
-                throw new ArgumentOutOfRangeException("length");
-            }
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
             var empty = new byte[length * DataSize];
             Marshal.Copy(empty, 0, DataPointer, empty.Length);
         }
@@ -73,15 +70,13 @@ namespace RDotNet
                 }
                 using (new ProtectedPointer(this))
                 {
-                    switch (Engine.Compatibility)
+                    return Engine.Compatibility switch
                     {
-                        case REngine.CompatibilityMode.ALTREP:
-                            return GetValueAltRep(index);
-                        case REngine.CompatibilityMode.PreALTREP:
-                            return GetValue(index);
-                        default:
-                            throw new Exception("Unable to access the vector element for this unknown R compatibility mode");
-                    }
+                        REngine.CompatibilityMode.ALTREP => GetValueAltRep(index),
+                        REngine.CompatibilityMode.PreALTREP => GetValue(index),
+                        _ => throw new Exception(
+                            "Unable to access the vector element for this unknown R compatibility mode")
+                    };
                 }
             }
             set
@@ -158,7 +153,7 @@ namespace RDotNet
         /// <param name="values">The values to put in the vector. Length must match exactly the vector size</param>
         public void SetVector(T[] values)
         {
-            if (values.Length != this.Length)
+            if (values.Length != Length)
                 throw new ArgumentException("The length of the array provided differs from the vector length");
             using (new ProtectedPointer(this))
             {
@@ -174,12 +169,12 @@ namespace RDotNet
         {
             using (new ProtectedPointer(this))
             {
-                /* 
-                 * as of R 3.5 DataPointer may return null if the vector 
+                /*
+                 * as of R 3.5 DataPointer may return null if the vector
                  * is an alternate representation
-                 * See section General Vectors in  
+                 * See section General Vectors in
                  * https://svn.r-project.org/R/branches/ALTREP/ALTREP.html
-                 * 
+                 *
                  * If we are in compatibility mode for pre-ALTREP, we will always
                  * use the fast method.
                  */
@@ -188,10 +183,8 @@ namespace RDotNet
                 {
                     return GetArrayFast();
                 }
-                else
-                {
-                    return GetAltRepArray();
-                }
+
+                return GetAltRepArray();
             }
         }
 
@@ -226,12 +219,12 @@ namespace RDotNet
         {
             get
             {
-                int index = getIndex(name);
+                var index = getIndex(name);
                 return this[index];
             }
             set
             {
-                int index = getIndex(name);
+                var index = getIndex(name);
                 this[index] = value;
             }
         }
@@ -239,21 +232,18 @@ namespace RDotNet
         private int getIndex(string name)
         {
             if (name == null)
-                throw new ArgumentNullException("name", "indexing a vector by name requires a non-null name argument");
-            string[] names = Names;
+                throw new ArgumentNullException(nameof(name), "indexing a vector by name requires a non-null name argument");
+            var names = Names;
             if (names == null)
                 throw new NotSupportedException("The vector has no names defined - indexing it by name cannot be supported");
-            int index = Array.IndexOf(names, name);
+            var index = Array.IndexOf(names, name);
             return index;
         }
 
         /// <summary>
         /// Gets the number of elements.
         /// </summary>
-        public int Length
-        {
-            get { return this.GetFunction<Rf_length>()(handle); }
-        }
+        public int Length => GetFunction<Rf_length>()(handle);
 
         /// <summary>
         /// Gets the names of elements.
@@ -262,19 +252,15 @@ namespace RDotNet
         {
             get
             {
-                SymbolicExpression namesSymbol = Engine.GetPredefinedSymbol("R_NamesSymbol");
-                SymbolicExpression names = GetAttribute(namesSymbol);
-                if (names == null)
-                {
-                    return null;
-                }
-                CharacterVector namesVector = names.AsCharacter();
+                var namesSymbol = Engine.GetPredefinedSymbol("R_NamesSymbol");
+                var names = GetAttribute(namesSymbol);
+                var namesVector = names?.AsCharacter();
                 if (namesVector == null)
                 {
                     return null;
                 }
 
-                int length = namesVector.Length;
+                var length = namesVector.Length;
                 var result = new string[length];
                 namesVector.CopyTo(result, length);
                 return result;
@@ -288,15 +274,14 @@ namespace RDotNet
         {
             get
             {
-                switch (Engine.Compatibility)
+                return Engine.Compatibility switch
                 {
-                    case REngine.CompatibilityMode.ALTREP:
-                        return GetFunction<DATAPTR_OR_NULL>()(this.DangerousGetHandle());
-                    case REngine.CompatibilityMode.PreALTREP:
-                        return IntPtr.Add(handle, Marshal.SizeOf(typeof(Internals.PreALTREP.VECTOR_SEXPREC)));
-                    default:
-                        throw new MemberAccessException("Unable to translate the DataPointer for this R compatibility mode");
-                }
+                    REngine.CompatibilityMode.ALTREP => GetFunction<DATAPTR_OR_NULL>()(DangerousGetHandle()),
+                    REngine.CompatibilityMode.PreALTREP => IntPtr.Add(handle,
+                        Marshal.SizeOf(typeof(Internals.PreALTREP.VECTOR_SEXPREC))),
+                    _ => throw new MemberAccessException(
+                        "Unable to translate the DataPointer for this R compatibility mode")
+                };
             }
         }
 
@@ -312,7 +297,7 @@ namespace RDotNet
         /// </summary>
         public IEnumerator<T> GetEnumerator()
         {
-            for (int index = 0; index < Length; index++)
+            for (var index = 0; index < Length; index++)
             {
                 yield return this[index];
             }
@@ -334,10 +319,7 @@ namespace RDotNet
         /// <param name="destinationIndex">The first index of the destination array.</param>
         public void CopyTo(T[] destination, int length, int sourceIndex = 0, int destinationIndex = 0)
         {
-            if (destination == null)
-            {
-                throw new ArgumentNullException("destination");
-            }
+            ArgumentNullException.ThrowIfNull(destination);
             if (length < 0)
             {
                 throw new IndexOutOfRangeException("length");

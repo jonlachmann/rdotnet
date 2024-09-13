@@ -62,8 +62,8 @@ namespace RDotNet
         protected override double GetValue(int index)
         {
             var data = new double[1];
-            int offset = GetOffset(index);
-            IntPtr pointer = IntPtr.Add(DataPointer, offset);
+            var offset = GetOffset(index);
+            var pointer = IntPtr.Add(DataPointer, offset);
             Marshal.Copy(pointer, data, 0, data.Length);
             return data[0];
         }
@@ -76,7 +76,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override double GetValueAltRep(int index)
         {
-            return GetFunction<REAL_ELT>()(this.DangerousGetHandle(), (IntPtr)index);
+            return GetFunction<REAL_ELT>()(DangerousGetHandle(), index);
         }
 
         /// <summary>
@@ -88,8 +88,8 @@ namespace RDotNet
         protected override void SetValue(int index, double value)
         {
             var data = new[] { value };
-            int offset = GetOffset(index);
-            IntPtr pointer = IntPtr.Add(DataPointer, offset);
+            var offset = GetOffset(index);
+            var pointer = IntPtr.Add(DataPointer, offset);
             Marshal.Copy(data, 0, pointer, data.Length);
         }
 
@@ -101,7 +101,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValueAltRep(int index, double value)
         {
-            GetFunction<SET_REAL_ELT>()(this.DangerousGetHandle(), (IntPtr)index, value);
+            GetFunction<SET_REAL_ELT>()(DangerousGetHandle(), index, value);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace RDotNet
         /// <returns>Array equivalent</returns>
         protected override double[] GetArrayFast()
         {
-            var res = new double[this.Length];
+            var res = new double[Length];
             Marshal.Copy(DataPointer, res, 0, res.Length);
             return res;
         }
@@ -123,8 +123,8 @@ namespace RDotNet
         public override double[] GetAltRepArray()
         {
             // by inference from `static SEXP compact_intseq_Duplicate(SEXP x, Rboolean deep)`  in altrep.c
-            var res = new double[this.Length];
-            GetFunction<REAL_GET_REGION>()(this.DangerousGetHandle(), (IntPtr)0, (IntPtr)this.Length, res);
+            var res = new double[Length];
+            GetFunction<REAL_GET_REGION>()(DangerousGetHandle(), 0, Length, res);
             return res;
         }
 
@@ -134,17 +134,14 @@ namespace RDotNet
         /// </summary>
         protected override void SetVectorDirect(double[] values)
         {
-            IntPtr pointer = IntPtr.Add(DataPointer, 0);
+            var pointer = IntPtr.Add(DataPointer, 0);
             Marshal.Copy(values, 0, pointer, values.Length);
         }
 
         /// <summary>
         /// Gets the size of a real number in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return sizeof(double); }
-        }
+        protected override int DataSize => sizeof(double);
 
         /// <summary>
         /// Copies the elements to the specified array.
@@ -155,10 +152,7 @@ namespace RDotNet
         /// <param name="destinationIndex">The first index of the destination array.</param>
         public new void CopyTo(double[] destination, int length, int sourceIndex = 0, int destinationIndex = 0)
         {
-            if (destination == null)
-            {
-                throw new ArgumentNullException("destination");
-            }
+            ArgumentNullException.ThrowIfNull(destination);
             if (length < 0)
             {
                 throw new IndexOutOfRangeException("length");
@@ -172,8 +166,8 @@ namespace RDotNet
                 throw new IndexOutOfRangeException("destinationIndex");
             }
 
-            int offset = GetOffset(sourceIndex);
-            IntPtr pointer = IntPtr.Add(DataPointer, offset);
+            var offset = GetOffset(sourceIndex);
+            var pointer = IntPtr.Add(DataPointer, offset);
             Marshal.Copy(pointer, destination, destinationIndex, length);
         }
     }

@@ -2,6 +2,7 @@ using RDotNet.Internals;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace RDotNet
@@ -19,10 +20,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static CharacterVector CreateCharacterVector(this REngine engine, int length)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -38,10 +36,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static ComplexVector CreateComplexVector(this REngine engine, int length)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -57,10 +52,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static IntegerVector CreateIntegerVector(this REngine engine, int length)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -76,10 +68,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static LogicalVector CreateLogicalVector(this REngine engine, int length)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -95,10 +84,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static NumericVector CreateNumericVector(this REngine engine, int length)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -114,10 +100,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static RawVector CreateRawVector(this REngine engine, int length)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -133,10 +116,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static CharacterVector CreateCharacterVector(this REngine engine, IEnumerable<string> vector)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -152,10 +132,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static ComplexVector CreateComplexVector(this REngine engine, IEnumerable<Complex> vector)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -171,10 +148,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static IntegerVector CreateIntegerVector(this REngine engine, IEnumerable<int> vector)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -190,10 +164,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static LogicalVector CreateLogicalVector(this REngine engine, IEnumerable<bool> vector)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -209,10 +180,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static NumericVector CreateNumericVector(this REngine engine, IEnumerable<double> vector)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -228,10 +196,7 @@ namespace RDotNet
         /// <returns>The new vector.</returns>
         public static RawVector CreateRawVector(this REngine engine, IEnumerable<byte> vector)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -314,10 +279,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static CharacterMatrix CreateCharacterMatrix(this REngine engine, int rowCount, int columnCount)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -334,10 +296,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static ComplexMatrix CreateComplexMatrix(this REngine engine, int rowCount, int columnCount)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -354,10 +313,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static IntegerMatrix CreateIntegerMatrix(this REngine engine, int rowCount, int columnCount)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -374,10 +330,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static LogicalMatrix CreateLogicalMatrix(this REngine engine, int rowCount, int columnCount)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -394,10 +347,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static NumericMatrix CreateNumericMatrix(this REngine engine, int rowCount, int columnCount)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -414,10 +364,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static RawMatrix CreateRawMatrix(this REngine engine, int rowCount, int columnCount)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -433,10 +380,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static CharacterMatrix CreateCharacterMatrix(this REngine engine, string[,] matrix)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -452,10 +396,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static ComplexMatrix CreateComplexMatrix(this REngine engine, Complex[,] matrix)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -471,10 +412,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static IntegerMatrix CreateIntegerMatrix(this REngine engine, int[,] matrix)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -490,10 +428,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static LogicalMatrix CreateLogicalMatrix(this REngine engine, bool[,] matrix)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -509,10 +444,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static NumericMatrix CreateNumericMatrix(this REngine engine, double[,] matrix)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -528,10 +460,7 @@ namespace RDotNet
         /// <returns>The new matrix.</returns>
         public static RawMatrix CreateRawMatrix(this REngine engine, byte[,] matrix)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -554,8 +483,8 @@ namespace RDotNet
            string[] rowNames = null, bool checkRows = false, bool checkNames = true, bool stringsAsFactors = true)
         {
             var df = engine.GetSymbol("data.frame").AsFunction();
-            SymbolicExpression[] colVectors = ToVectors(engine, columns);
-            Tuple<string, SymbolicExpression>[] namedColArgs = CreateNamedArgs(colVectors, columnNames);
+            var colVectors = ToVectors(engine, columns);
+            var namedColArgs = CreateNamedArgs(colVectors, columnNames);
             var args = new List<Tuple<string, SymbolicExpression>>(namedColArgs);
             if (rowNames != null) args.Add(Tuple.Create("row.names", (SymbolicExpression)engine.CreateCharacterVector(rowNames)));
             args.Add(Tuple.Create("check.rows", (SymbolicExpression)engine.CreateLogical(checkRows)));
@@ -568,11 +497,8 @@ namespace RDotNet
         private static Tuple<string, SymbolicExpression>[] CreateNamedArgs(SymbolicExpression[] colVectors, string[] columnNames)
         {
             if (columnNames != null && colVectors.Length != columnNames.Length)
-                throw new ArgumentException("columnNames", "when not null, the number of column names must match the number of SEXP");
-            var args = new List<Tuple<string, SymbolicExpression>>();
-            for (int i = 0; i < colVectors.Length; i++)
-                args.Add(Tuple.Create(columnNames != null ? columnNames[i] : "", colVectors[i]));
-            return args.ToArray();
+                throw new ArgumentException("when not null, the number of column names must match the number of SEXP", nameof(columnNames));
+            return colVectors.Select((t, i) => Tuple.Create(columnNames != null ? columnNames[i] : "", t)).ToArray();
         }
 
         internal static SymbolicExpression[] ToVectors(REngine engine, IEnumerable[] columns)
@@ -582,7 +508,7 @@ namespace RDotNet
 
         internal static SymbolicExpression ToVector(REngine engine, IEnumerable values)
         {
-            if (values == null) throw new ArgumentNullException("values", "values to transform to an R vector must not be null");
+            if (values == null) throw new ArgumentNullException(nameof(values), "values to transform to an R vector must not be null");
             var ints = values as IEnumerable<int>;
             var chars = values as IEnumerable<string>;
             var cplxs = values as IEnumerable<Complex>;
@@ -605,7 +531,7 @@ namespace RDotNet
                 return engine.CreateNumericVector(nums);
             if (raws != null)
                 return engine.CreateRawVector(raws);
-            throw new NotSupportedException(string.Format("Cannot convert type {0} to an R vector", values.GetType()));
+            throw new NotSupportedException($"Cannot convert type {values.GetType()} to an R vector");
         }
 
         /// <summary>
@@ -616,14 +542,8 @@ namespace RDotNet
         /// <returns>The newly created environment.</returns>
         public static REnvironment CreateEnvironment(this REngine engine, REnvironment parent)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException("engine");
-            }
-            if (parent == null)
-            {
-                throw new ArgumentNullException("parent");
-            }
+            ArgumentNullException.ThrowIfNull(engine);
+            ArgumentNullException.ThrowIfNull(parent);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();
@@ -638,10 +558,7 @@ namespace RDotNet
         /// <returns>The newly created isolated environment.</returns>
         public static REnvironment CreateIsolatedEnvironment(this REngine engine)
         {
-            if (engine == null)
-            {
-                throw new ArgumentNullException("engine");
-            }
+            ArgumentNullException.ThrowIfNull(engine);
             if (!engine.IsRunning)
             {
                 throw new ArgumentException();

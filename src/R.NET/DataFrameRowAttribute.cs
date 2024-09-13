@@ -20,18 +20,17 @@ namespace RDotNet
         /// </summary>
         public DataFrameRowAttribute()
         {
-            this.cache = new Dictionary<Type, Map>();
+            cache = new Dictionary<Type, Map>();
         }
 
         internal TRow Convert<TRow>(DataFrameRow row)
            where TRow : class, new()
         {
             var rowType = typeof(TRow);
-            Map map;
-            if (!this.cache.TryGetValue(rowType, out map))
+            if (!cache.TryGetValue(rowType, out var map))
             {
                 map = CreateMap(rowType);
-                this.cache.Add(rowType, map);
+                cache.Add(rowType, map);
             }
             var result = Activator.CreateInstance(rowType);
             map(row, result);

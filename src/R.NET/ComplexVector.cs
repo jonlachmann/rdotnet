@@ -42,7 +42,7 @@ namespace RDotNet
         protected internal ComplexVector(REngine engine, IntPtr coerced)
             : base(engine, coerced)
         { }
-        
+
         /// <summary>
         /// Gets the element at the specified index.
         /// </summary>
@@ -52,8 +52,8 @@ namespace RDotNet
         protected override Complex GetValue(int index)
         {
             var data = new double[2];
-            int offset = GetOffset(index);
-            IntPtr pointer = IntPtr.Add(DataPointer, offset);
+            var offset = GetOffset(index);
+            var pointer = IntPtr.Add(DataPointer, offset);
             Marshal.Copy(pointer, data, 0, data.Length);
             return new Complex(data[0], data[1]);
         }
@@ -66,7 +66,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override Complex GetValueAltRep(int index)
         {
-            var data = GetFunction<COMPLEX_ELT>()(this.DangerousGetHandle(), (IntPtr)index);
+            var data = GetFunction<COMPLEX_ELT>()(DangerousGetHandle(), index);
             return new Complex(data.r, data.i);
         }
 
@@ -79,8 +79,8 @@ namespace RDotNet
         protected override void SetValue(int index, Complex value)
         {
             var data = new[] { value.Real, value.Imaginary };
-            int offset = GetOffset(index);
-            IntPtr pointer = IntPtr.Add(DataPointer, offset);
+            var offset = GetOffset(index);
+            var pointer = IntPtr.Add(DataPointer, offset);
             Marshal.Copy(data, 0, pointer, data.Length);
         }
 
@@ -92,7 +92,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValueAltRep(int index, Complex value)
         {
-            GetFunction<SET_COMPLEX_ELT>()(this.DangerousGetHandle(), (IntPtr)index,
+            GetFunction<SET_COMPLEX_ELT>()(DangerousGetHandle(), index,
                         RTypesUtil.SerializeComplexToRComplex(value));
         }
 
@@ -102,7 +102,7 @@ namespace RDotNet
         /// <returns></returns>
         protected override Complex[] GetArrayFast()
         {
-            int n = this.Length;
+            var n = this.Length;
             var data = new double[2 * n];
             Marshal.Copy(DataPointer, data, 0, 2 * n);
             return RTypesUtil.DeserializeComplexFromDouble(data);
@@ -113,17 +113,14 @@ namespace RDotNet
         /// </summary>
         protected override void SetVectorDirect(Complex[] values)
         {
-            double[] data = RTypesUtil.SerializeComplexToDouble(values);
-            IntPtr pointer = IntPtr.Add(DataPointer, 0);
+            var data = RTypesUtil.SerializeComplexToDouble(values);
+            var pointer = IntPtr.Add(DataPointer, 0);
             Marshal.Copy(data, 0, pointer, data.Length);
         }
 
         /// <summary>
         /// Gets the size of a complex number in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return Marshal.SizeOf(typeof(Complex)); }
-        }
+        protected override int DataSize => Marshal.SizeOf(typeof(Complex));
     }
 }

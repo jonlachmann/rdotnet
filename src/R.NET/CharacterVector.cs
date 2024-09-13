@@ -48,10 +48,10 @@ namespace RDotNet
         /// <returns></returns>
         protected override string[] GetArrayFast()
         {
-            int n = this.Length;
-            string[] res = new string[n];
-            bool useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
-            for (int i = 0; i < n; i++)
+            var n = Length;
+            var res = new string[n];
+            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            for (var i = 0; i < n; i++)
             {
                 res[i] = (useAltRep ? GetValueAltRep(i) : GetValue(i));
             }
@@ -69,13 +69,13 @@ namespace RDotNet
             // To work with ALTREP (introduced in R 3.5.0) and non-ALTREP objects, we will get strings
             // via STRING_ELT, instead of offseting the DataPointer.  This lets R manage the details of
             // ALTREP conversion for us.
-            IntPtr objPointer = GetFunction<STRING_ELT>()(this.DangerousGetHandle(), (IntPtr)index);
+            var objPointer = GetFunction<STRING_ELT>()(this.DangerousGetHandle(), (IntPtr)index);
             if (objPointer == Engine.NaStringPointer)
             {
                 return null;
             }
 
-            IntPtr stringData = GetFunction<DATAPTR_OR_NULL>()(objPointer);
+            var stringData = GetFunction<DATAPTR_OR_NULL>()(objPointer);
             return InternalString.StringFromNativeUtf8(stringData);
         }
 
@@ -87,13 +87,13 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override string GetValue(int index)
         {
-            int offset = GetOffset(index);
-            IntPtr pointerItem = Marshal.ReadIntPtr(DataPointer, offset);
+            var offset = GetOffset(index);
+            var pointerItem = Marshal.ReadIntPtr(DataPointer, offset);
             if (pointerItem == Engine.NaStringPointer)
             {
                 return null;
             }
-            IntPtr pointer = IntPtr.Add(pointerItem, Marshal.SizeOf(typeof(Internals.PreALTREP.VECTOR_SEXPREC)));
+            var pointer = IntPtr.Add(pointerItem, Marshal.SizeOf(typeof(Internals.PreALTREP.VECTOR_SEXPREC)));
             return InternalString.StringFromNativeUtf8(pointer);
         }
 
@@ -107,12 +107,11 @@ namespace RDotNet
             return GetArrayFast();
         }
 
-        private Rf_mkChar _mkChar = null;
+        private Rf_mkChar _mkChar;
 
-        private IntPtr mkChar(string value)
+        private IntPtr MkChar(string value)
         {
-            if (_mkChar == null)
-                _mkChar = this.GetFunction<Rf_mkChar>();
+            _mkChar ??= GetFunction<Rf_mkChar>();
             return _mkChar(value);
         }
 
@@ -135,8 +134,8 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValue(int index, string value)
         {
-            int offset = GetOffset(index);
-            IntPtr stringPointer = value == null ? Engine.NaStringPointer : mkChar(value);
+            var offset = GetOffset(index);
+            var stringPointer = value == null ? Engine.NaStringPointer : MkChar(value);
             Marshal.WriteIntPtr(DataPointer, offset, stringPointer);
         }
 
@@ -147,8 +146,8 @@ namespace RDotNet
         {
             // Possibly not the fastest implementation, but faster may require C code.
             // TODO check the behavior of P/Invoke on array of strings (VT_ARRAY|VT_LPSTR?)
-            bool useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
-            for (int i = 0; i < values.Length; i++)
+            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            for (var i = 0; i < values.Length; i++)
             {
                 if (useAltRep)
                 {
@@ -163,9 +162,6 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of a pointer in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return Marshal.SizeOf(typeof(IntPtr)); }
-        }
+        protected override int DataSize => Marshal.SizeOf(typeof(IntPtr));
     }
 }

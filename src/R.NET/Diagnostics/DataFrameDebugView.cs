@@ -17,8 +17,8 @@ namespace RDotNet.Diagnostics
         {
             get
             {
-                return Enumerable.Range(0, this.dataFrame.ColumnCount)
-                   .Select(column => new DataFrameColumnDisplay(this.dataFrame, column))
+                return Enumerable.Range(0, dataFrame.ColumnCount)
+                   .Select(column => new DataFrameColumnDisplay(dataFrame, column))
                    .ToArray();
             }
         }

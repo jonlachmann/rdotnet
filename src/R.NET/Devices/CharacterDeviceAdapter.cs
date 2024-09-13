@@ -19,27 +19,27 @@ namespace RDotNet.Devices
         /// field and use it when 'this == null' (the check is done in 'this.Device').
         /// This workarounds: http://rdotnet.codeplex.com/workitem/154
         /// </summary>
-        private static ICharacterDevice lastDevice;
+        private static ICharacterDevice _lastDevice;
 
-        private readonly ICharacterDevice device;
-        private REngine engine;
+        private readonly ICharacterDevice _device;
+        private REngine _engine;
 
-        private ptr_R_Suicide suicideDelegate;
-        private ptr_R_ShowMessage showMessageDelegate;
-        private ptr_R_ReadConsole readConsoleDelegate;
-        private ptr_R_WriteConsole writeConsoleDelegate;
-        private ptr_R_WriteConsoleEx writeConsoleExDelegate;
-        private ptr_R_ResetConsole resetConsoleDelegate;
-        private ptr_R_FlushConsole flushConsoleDelegate;
-        private ptr_R_ClearerrConsole clearerrConsoleDelegate;
-        private ptr_R_Busy busyDelegate;
-        private ptr_R_CleanUp cleanUpDelegate;
-        private ptr_R_ShowFiles showFilesDelegate;
-        private ptr_R_ChooseFile chooseFileDelegate;
-        private ptr_R_EditFile editFileDelegate;
-        private ptr_R_loadhistory loadHistoryDelegate;
-        private ptr_R_savehistory saveHistoryDelegate;
-        private ptr_R_addhistory addHistoryDelegate;
+        private ptr_R_Suicide _suicideDelegate;
+        private ptr_R_ShowMessage _showMessageDelegate;
+        private ptr_R_ReadConsole _readConsoleDelegate;
+        private ptr_R_WriteConsole _writeConsoleDelegate;
+        private ptr_R_WriteConsoleEx _writeConsoleExDelegate;
+        private ptr_R_ResetConsole _resetConsoleDelegate;
+        private ptr_R_FlushConsole _flushConsoleDelegate;
+        private ptr_R_ClearerrConsole _clearerrConsoleDelegate;
+        private ptr_R_Busy _busyDelegate;
+        private ptr_R_CleanUp _cleanUpDelegate;
+        private ptr_R_ShowFiles _showFilesDelegate;
+        private ptr_R_ChooseFile _chooseFileDelegate;
+        private ptr_R_EditFile _editFileDelegate;
+        private ptr_R_loadhistory _loadHistoryDelegate;
+        private ptr_R_savehistory _saveHistoryDelegate;
+        private ptr_R_addhistory _addHistoryDelegate;
 
         /// <summary>
         /// Creates an instance.
@@ -47,12 +47,9 @@ namespace RDotNet.Devices
         /// <param name="device">The implementation.</param>
         public CharacterDeviceAdapter(ICharacterDevice device)
         {
-            if (device == null)
-            {
-                throw new ArgumentNullException("device");
-            }
-            lastDevice = device;
-            this.device = device;
+            ArgumentNullException.ThrowIfNull(device);
+            _lastDevice = device;
+            _device = device;
         }
 
         /// <summary>
@@ -62,15 +59,12 @@ namespace RDotNet.Devices
         {
             get
             {
-                if (this == null) return lastDevice;
-                else return this.device;
+                if (this == null) return _lastDevice;
+                else return _device;
             }
         }
 
-        private REngine Engine
-        {
-            get { return this.engine; }
-        }
+        private REngine Engine => _engine;
 
         protected TDelegate GetFunction<TDelegate>() where TDelegate : class
         {
@@ -88,7 +82,7 @@ namespace RDotNet.Devices
 
         internal void Install(REngine engine, StartupParameter parameter)
         {
-            this.engine = engine;
+            _engine = engine;
             switch (NativeUtility.GetPlatform())
             {
                 case PlatformID.Win32NT:
@@ -106,20 +100,20 @@ namespace RDotNet.Devices
         {
             if (parameter.RHome == null)
             {
-                parameter.start.rhome = ToNativeUnixPath(NativeUtility.GetRHomeEnvironmentVariable());
+                parameter.Start.rhome = ToNativeUnixPath(NativeUtility.GetRHomeEnvironmentVariable());
             }
             if (parameter.Home == null)
             {
-                string home = Marshal.PtrToStringAnsi(Engine.GetFunction<getValue>("getRUser")());
-                parameter.start.home = ToNativeUnixPath(home);
+                var home = Marshal.PtrToStringAnsi(Engine.GetFunction<GetValue>("getRUser")());
+                parameter.Start.home = ToNativeUnixPath(home);
             }
-            parameter.start.ReadConsole = ReadConsole;
-            parameter.start.WriteConsole = WriteConsole;
-            parameter.start.WriteConsoleEx = WriteConsoleEx;
-            parameter.start.CallBack = Callback;
-            parameter.start.ShowMessage = ShowMessage;
-            parameter.start.YesNoCancel = Ask;
-            parameter.start.Busy = Busy;
+            parameter.Start.ReadConsole = ReadConsole;
+            parameter.Start.WriteConsole = WriteConsole;
+            parameter.Start.WriteConsoleEx = WriteConsoleEx;
+            parameter.Start.CallBack = Callback;
+            parameter.Start.ShowMessage = ShowMessage;
+            parameter.Start.YesNoCancel = Ask;
+            parameter.Start.Busy = Busy;
         }
 
         private static IntPtr ToNativeUnixPath(string path)
@@ -130,81 +124,81 @@ namespace RDotNet.Devices
         private void SetupUnixDevice()
         {
 
-            suicideDelegate = (ptr_R_Suicide)Suicide;
-            IntPtr newSuicide = Marshal.GetFunctionPointerForDelegate(suicideDelegate);
-            this.engine.WriteIntPtr("ptr_R_Suicide", newSuicide);
+            _suicideDelegate = Suicide;
+            var newSuicide = Marshal.GetFunctionPointerForDelegate(_suicideDelegate);
+            _engine.WriteIntPtr("ptr_R_Suicide", newSuicide);
 
-            showMessageDelegate = (ptr_R_ShowMessage)ShowMessage;
-            IntPtr newShowMessage = Marshal.GetFunctionPointerForDelegate(showMessageDelegate);
-            this.engine.WriteIntPtr("ptr_R_ShowMessage", newShowMessage);
+            _showMessageDelegate = ShowMessage;
+            var newShowMessage = Marshal.GetFunctionPointerForDelegate(_showMessageDelegate);
+            _engine.WriteIntPtr("ptr_R_ShowMessage", newShowMessage);
 
-            readConsoleDelegate = (ptr_R_ReadConsole)ReadConsole;
-            IntPtr newReadConsole = Marshal.GetFunctionPointerForDelegate(readConsoleDelegate);
-            this.engine.WriteIntPtr("ptr_R_ReadConsole", newReadConsole);
+            _readConsoleDelegate = ReadConsole;
+            var newReadConsole = Marshal.GetFunctionPointerForDelegate(_readConsoleDelegate);
+            _engine.WriteIntPtr("ptr_R_ReadConsole", newReadConsole);
 
             // Candidate fix for https://github.com/rdotnet/rdotnet/issues/131
-            // Not sure when behavior changed in R character handling, but it seems that at some point 
+            // Not sure when behavior changed in R character handling, but it seems that at some point
             // having R_outputfile set to not NULL e.g.:
-            // in src/unix/system.c 
+            // in src/unix/system.c
             // R_Outputfile = stdout;
             // R_Consolefile = stderr;
-            // took precedence over setting ptr_R_WriteConsole with a callback. 
-            // We need to reset these two values to a nullptr: 
-            this.engine.WriteIntPtr("R_Outputfile", IntPtr.Zero);
-            this.engine.WriteIntPtr("R_Consolefile", IntPtr.Zero);
+            // took precedence over setting ptr_R_WriteConsole with a callback.
+            // We need to reset these two values to a nullptr:
+            _engine.WriteIntPtr("R_Outputfile", IntPtr.Zero);
+            _engine.WriteIntPtr("R_Consolefile", IntPtr.Zero);
 
 
-            writeConsoleDelegate = (ptr_R_WriteConsole)WriteConsole;
-            IntPtr newWriteConsole = Marshal.GetFunctionPointerForDelegate(writeConsoleDelegate);
-            this.engine.WriteIntPtr("ptr_R_WriteConsole", newWriteConsole);
+            _writeConsoleDelegate = WriteConsole;
+            var newWriteConsole = Marshal.GetFunctionPointerForDelegate(_writeConsoleDelegate);
+            _engine.WriteIntPtr("ptr_R_WriteConsole", newWriteConsole);
 
-            writeConsoleExDelegate = (ptr_R_WriteConsoleEx)WriteConsoleEx;
-            IntPtr newWriteConsoleEx = Marshal.GetFunctionPointerForDelegate(writeConsoleExDelegate);
-            this.engine.WriteIntPtr("ptr_R_WriteConsoleEx", newWriteConsoleEx);
+            _writeConsoleExDelegate = WriteConsoleEx;
+            var newWriteConsoleEx = Marshal.GetFunctionPointerForDelegate(_writeConsoleExDelegate);
+            _engine.WriteIntPtr("ptr_R_WriteConsoleEx", newWriteConsoleEx);
 
-            resetConsoleDelegate = (ptr_R_ResetConsole)ResetConsole;
-            IntPtr newResetConsole = Marshal.GetFunctionPointerForDelegate(resetConsoleDelegate);
-            this.engine.WriteIntPtr("ptr_R_ResetConsole", newResetConsole);
+            _resetConsoleDelegate = ResetConsole;
+            var newResetConsole = Marshal.GetFunctionPointerForDelegate(_resetConsoleDelegate);
+            _engine.WriteIntPtr("ptr_R_ResetConsole", newResetConsole);
 
-            flushConsoleDelegate = (ptr_R_FlushConsole)FlushConsole;
-            IntPtr newFlushConsole = Marshal.GetFunctionPointerForDelegate(flushConsoleDelegate);
-            this.engine.WriteIntPtr("ptr_R_FlushConsole", newFlushConsole);
+            _flushConsoleDelegate = FlushConsole;
+            var newFlushConsole = Marshal.GetFunctionPointerForDelegate(_flushConsoleDelegate);
+            _engine.WriteIntPtr("ptr_R_FlushConsole", newFlushConsole);
 
-            clearerrConsoleDelegate = (ptr_R_ClearerrConsole)ClearErrorConsole;
-            IntPtr newClearerrConsole = Marshal.GetFunctionPointerForDelegate(clearerrConsoleDelegate);
-            this.engine.WriteIntPtr("ptr_R_ClearerrConsole", newClearerrConsole);
+            _clearerrConsoleDelegate = ClearErrorConsole;
+            var newClearerrConsole = Marshal.GetFunctionPointerForDelegate(_clearerrConsoleDelegate);
+            _engine.WriteIntPtr("ptr_R_ClearerrConsole", newClearerrConsole);
 
-            busyDelegate = (ptr_R_Busy)Busy;
-            IntPtr newBusy = Marshal.GetFunctionPointerForDelegate(busyDelegate);
-            this.engine.WriteIntPtr("ptr_R_Busy", newBusy);
+            _busyDelegate = Busy;
+            var newBusy = Marshal.GetFunctionPointerForDelegate(_busyDelegate);
+            _engine.WriteIntPtr("ptr_R_Busy", newBusy);
 
-            cleanUpDelegate = (ptr_R_CleanUp)CleanUp;
-            IntPtr newCleanUp = Marshal.GetFunctionPointerForDelegate(cleanUpDelegate);
-            this.engine.WriteIntPtr("ptr_R_CleanUp", newCleanUp);
+            _cleanUpDelegate = CleanUp;
+            var newCleanUp = Marshal.GetFunctionPointerForDelegate(_cleanUpDelegate);
+            _engine.WriteIntPtr("ptr_R_CleanUp", newCleanUp);
 
-            showFilesDelegate = (ptr_R_ShowFiles)ShowFiles;
-            IntPtr newShowFiles = Marshal.GetFunctionPointerForDelegate(showFilesDelegate);
-            this.engine.WriteIntPtr("ptr_R_ShowFiles", newShowFiles);
+            _showFilesDelegate = ShowFiles;
+            var newShowFiles = Marshal.GetFunctionPointerForDelegate(_showFilesDelegate);
+            _engine.WriteIntPtr("ptr_R_ShowFiles", newShowFiles);
 
-            chooseFileDelegate = (ptr_R_ChooseFile)ChooseFile;
-            IntPtr newChooseFile = Marshal.GetFunctionPointerForDelegate(chooseFileDelegate);
-            this.engine.WriteIntPtr("ptr_R_ChooseFile", newChooseFile);
+            _chooseFileDelegate = ChooseFile;
+            var newChooseFile = Marshal.GetFunctionPointerForDelegate(_chooseFileDelegate);
+            _engine.WriteIntPtr("ptr_R_ChooseFile", newChooseFile);
 
-            editFileDelegate = (ptr_R_EditFile)EditFile;
-            IntPtr newEditFile = Marshal.GetFunctionPointerForDelegate(editFileDelegate);
-            this.engine.WriteIntPtr("ptr_R_EditFile", newEditFile);
+            _editFileDelegate = EditFile;
+            var newEditFile = Marshal.GetFunctionPointerForDelegate(_editFileDelegate);
+            _engine.WriteIntPtr("ptr_R_EditFile", newEditFile);
 
-            loadHistoryDelegate = (ptr_R_loadhistory)LoadHistory;
-            IntPtr newLoadHistory = Marshal.GetFunctionPointerForDelegate(loadHistoryDelegate);
-            this.engine.WriteIntPtr("ptr_R_loadhistory", newLoadHistory);
+            _loadHistoryDelegate = LoadHistory;
+            var newLoadHistory = Marshal.GetFunctionPointerForDelegate(_loadHistoryDelegate);
+            _engine.WriteIntPtr("ptr_R_loadhistory", newLoadHistory);
 
-            saveHistoryDelegate = (ptr_R_savehistory)SaveHistory;
-            IntPtr newSaveHistory = Marshal.GetFunctionPointerForDelegate(saveHistoryDelegate);
-            this.engine.WriteIntPtr("ptr_R_savehistory", newSaveHistory);
+            _saveHistoryDelegate = SaveHistory;
+            var newSaveHistory = Marshal.GetFunctionPointerForDelegate(_saveHistoryDelegate);
+            _engine.WriteIntPtr("ptr_R_savehistory", newSaveHistory);
 
-            addHistoryDelegate = (ptr_R_addhistory)AddHistory;
-            IntPtr newAddHistory = Marshal.GetFunctionPointerForDelegate(addHistoryDelegate);
-            this.engine.WriteIntPtr("ptr_R_addhistory", newAddHistory);
+            _addHistoryDelegate = AddHistory;
+            var newAddHistory = Marshal.GetFunctionPointerForDelegate(_addHistoryDelegate);
+            _engine.WriteIntPtr("ptr_R_addhistory", newAddHistory);
         }
 
         private static string ConvertSeparatorToUnixStylePath(string path)
@@ -215,8 +209,8 @@ namespace RDotNet.Devices
         private bool ReadConsole(string prompt, StringBuilder buffer, int count, bool history)
         {
             buffer.Clear();
-            string input = Device.ReadConsole(prompt, count, history);
-            buffer.Append(input).Append("\n"); // input must end with '\n\0' ('\0' is appended during marshalling).
+            var input = Device.ReadConsole(prompt, count, history);
+            buffer.Append(input).Append('\n'); // input must end with '\n\0' ('\0' is appended during marshalling).
             return input != null;
         }
 
@@ -282,7 +276,7 @@ namespace RDotNet.Devices
 
         private int ChooseFile(bool create, StringBuilder buffer, int length)
         {
-            string path = Device.ChooseFile(create);
+            var path = Device.ChooseFile(create);
             return path == null ? 0 : Encoding.ASCII.GetByteCount(path);
         }
 
@@ -297,7 +291,7 @@ namespace RDotNet.Devices
             var op = new SymbolicExpression(Engine, operation);
             var arglist = new Pairlist(Engine, args);
             var env = new REnvironment(Engine, environment);
-            SymbolicExpression result = func(c, op, arglist, env);
+            var result = func(c, op, arglist, env);
             return result.DangerousGetHandle();
         }
 
@@ -319,7 +313,7 @@ namespace RDotNet.Devices
         #region Nested type: getValue
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate IntPtr getValue();
+        private delegate IntPtr GetValue();
 
         #endregion Nested type: getValue
     }

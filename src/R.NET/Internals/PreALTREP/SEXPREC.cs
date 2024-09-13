@@ -9,55 +9,25 @@ namespace RDotNet.Internals.PreALTREP
         private SEXPREC_HEADER header;
         private u u;
 
-        public sxpinfo sxpinfo
-        {
-            get { return this.header.sxpinfo; }
-        }
+        public sxpinfo sxpinfo => header.sxpinfo;
 
-        public IntPtr attrib
-        {
-            get { return this.header.attrib; }
-        }
+        public IntPtr attrib => header.attrib;
 
-        public IntPtr gengc_next_node
-        {
-            get { return this.header.gengc_next_node; }
-        }
+        public IntPtr gengc_next_node => header.gengc_next_node;
 
-        public IntPtr gengc_prev_node
-        {
-            get { return this.header.gengc_prev_node; }
-        }
+        public IntPtr gengc_prev_node => header.gengc_prev_node;
 
-        internal primsxp primsxp
-        {
-            get { return this.u.primsxp; }
-        }
+        internal primsxp primsxp => u.primsxp;
 
-        internal symsxp symsxp
-        {
-            get { return this.u.symsxp; }
-        }
+        internal symsxp symsxp => u.symsxp;
 
-        internal listsxp listsxp
-        {
-            get { return this.u.listsxp; }
-        }
+        internal listsxp listsxp => u.listsxp;
 
-        internal envsxp envsxp
-        {
-            get { return this.u.envsxp; }
-        }
+        internal envsxp envsxp => u.envsxp;
 
-        internal closxp closxp
-        {
-            get { return this.u.closxp; }
-        }
+        internal closxp closxp => u.closxp;
 
-        internal promsxp promsxp
-        {
-            get { return this.u.promsxp; }
-        }
+        internal promsxp promsxp => u.promsxp;
     }
 
     [StructLayout(LayoutKind.Explicit)]

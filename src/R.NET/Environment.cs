@@ -48,27 +48,26 @@ namespace RDotNet
         /// <returns>The symbol.</returns>
         public SymbolicExpression GetSymbol(string name)
         {
-            if (name == null)
+            switch (name)
             {
-                throw new ArgumentNullException();
-            }
-            if (name == string.Empty)
-            {
-                throw new ArgumentException();
+                case null:
+                    throw new ArgumentNullException();
+                case "":
+                    throw new ArgumentException();
             }
 
-            IntPtr installedName = this.GetFunction<Rf_install>()(name);
-            IntPtr value = this.GetFunction<Rf_findVar>()(installedName, handle);
+            var installedName = GetFunction<Rf_install>()(name);
+            var value = GetFunction<Rf_findVar>()(installedName, handle);
             if (Engine.CheckUnbound(value))
             {
-                throw new EvaluationException(string.Format("Error: object '{0}' not found", name));
+                throw new EvaluationException($"Error: object '{name}' not found");
             }
 
             var sexprecType = Engine.GetSEXPRECType();
             dynamic sexp = Convert.ChangeType(Marshal.PtrToStructure(value, sexprecType), sexprecType);
             if (sexp.sxpinfo.type == SymbolicExpressionType.Promise)
             {
-                value = this.GetFunction<Rf_eval>()(value, handle);
+                value = GetFunction<Rf_eval>()(value, handle);
             }
             return new SymbolicExpression(Engine, value);
         }
@@ -80,24 +79,21 @@ namespace RDotNet
         /// <param name="expression">The symbol.</param>
         public void SetSymbol(string name, SymbolicExpression expression)
         {
-            if (name == null)
+            switch (name)
             {
-                throw new ArgumentNullException("name", "'name' cannot be null");
+                case null:
+                    throw new ArgumentNullException("name", "'name' cannot be null");
+                case "":
+                    throw new ArgumentException("'name' cannot be an empty string");
             }
-            if (name == string.Empty)
-            {
-                throw new ArgumentException("'name' cannot be an empty string");
-            }
-            if (expression == null)
-            {
-                expression = Engine.NilValue;
-            }
-            if (expression.Engine != this.Engine)
+
+            expression ??= Engine.NilValue;
+            if (expression.Engine != Engine)
             {
                 throw new ArgumentException();
             }
-            IntPtr installedName = this.GetFunction<Rf_install>()(name);
-            this.GetFunction<Rf_defineVar>()(installedName, expression.DangerousGetHandle(), handle);
+            var installedName = GetFunction<Rf_install>()(name);
+            GetFunction<Rf_defineVar>()(installedName, expression.DangerousGetHandle(), handle);
         }
 
         /// <summary>
@@ -107,8 +103,8 @@ namespace RDotNet
         /// <returns>Symbol names.</returns>
         public string[] GetSymbolNames(bool all = false)
         {
-            var symbolNames = new CharacterVector(Engine, this.GetFunction<R_lsInternal>()(handle, all));
-            int length = symbolNames.Length;
+            var symbolNames = new CharacterVector(Engine, GetFunction<R_lsInternal>()(handle, all));
+            var length = symbolNames.Length;
             var copy = new string[length];
             symbolNames.CopyTo(copy, length);
             return copy;
