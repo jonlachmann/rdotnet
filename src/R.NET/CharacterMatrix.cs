@@ -53,32 +53,28 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
-                    int offset = GetOffset(rowIndex, columnIndex);
-                    IntPtr pointer = Marshal.ReadIntPtr(DataPointer, offset);
-                    if (pointer == Engine.NaStringPointer)
-                    {
-                        return null;
-                    }
-                    return new InternalString(Engine, pointer);
+                    var offset = GetOffset(rowIndex, columnIndex);
+                    var pointer = Marshal.ReadIntPtr(DataPointer, offset);
+                    return pointer == Engine.NaStringPointer ? null : new InternalString(Engine, pointer);
                 }
             }
             set
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
@@ -89,17 +85,16 @@ namespace RDotNet
 
         private Rf_mkChar _mkChar = null;
 
-        private IntPtr mkChar(string value)
+        private IntPtr MkChar(string value)
         {
-            if (_mkChar == null)
-                _mkChar = this.GetFunction<Rf_mkChar>();
+            _mkChar ??= GetFunction<Rf_mkChar>();
             return _mkChar(value);
         }
 
         private void SetValue(int rowIndex, int columnIndex, string value)
         {
-            int offset = GetOffset(rowIndex, columnIndex);
-            IntPtr stringPointer = value == null ? Engine.NaStringPointer : mkChar(value);
+            var offset = GetOffset(rowIndex, columnIndex);
+            var stringPointer = value == null ? Engine.NaStringPointer : MkChar(value);
             Marshal.WriteIntPtr(DataPointer, offset, stringPointer);
         }
 
@@ -109,11 +104,11 @@ namespace RDotNet
         /// <param name="matrix"></param>
         protected override void InitMatrixFastDirect(string[,] matrix)
         {
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            for (int i = 0; i < rows; i++)
+            var rows = matrix.GetLength(0);
+            var cols = matrix.GetLength(1);
+            for (var i = 0; i < rows; i++)
             {
-                for (int j = 0; j < cols; j++)
+                for (var j = 0; j < cols; j++)
                 {
                     SetValue(i, j, matrix[i, j]);
                 }
@@ -132,9 +127,6 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of a pointer in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return Marshal.SizeOf(typeof(IntPtr)); }
-        }
+        protected override int DataSize => Marshal.SizeOf(typeof(IntPtr));
     }
 }

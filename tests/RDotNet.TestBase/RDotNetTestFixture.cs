@@ -9,11 +9,11 @@ namespace RDotNet
     [Collection("R.NET unit tests")]
     public class RDotNetTestFixture
     {
-        private static readonly MockDevice device = new MockDevice();
+        private static readonly MockDevice device = new();
 
         //      protected string EngineName { get { return "RDotNetTest"; } }
 
-        protected MockDevice Device { get { return device; } }
+        protected MockDevice Device => device;
 
         private static REngine engine = null;
 
@@ -48,8 +48,7 @@ namespace RDotNet
         //[TearDown]
         protected virtual void TearDownFixture()
         {
-            if (engine != null)
-                engine.ClearGlobalEnvironment();
+            engine?.ClearGlobalEnvironment();
         }
 
         //[SetUp]
@@ -121,7 +120,7 @@ namespace RDotNet
 
         public static void AssertComplexAreEqual(Complex actual, Complex expected)
         {
-            // TestCreateComplexValid test otherwise fails on Mono, for NA values for R complex vectors. 
+            // TestCreateComplexValid test otherwise fails on Mono, for NA values for R complex vectors.
             if (double.IsNaN(expected.Real))
                 Assert.True(double.IsNaN(actual.Real));
             if (double.IsNaN(expected.Imaginary))
@@ -132,8 +131,8 @@ namespace RDotNet
 
         protected static void AssertElementsAreEqual<T>(T actual, T expected)
         {
-            // Yuck, but 
-            // TestCreateComplexValid test otherwise fails on Mono, for NA values for R complex vectors. 
+            // Yuck, but
+            // TestCreateComplexValid test otherwise fails on Mono, for NA values for R complex vectors.
             if (typeof(T) == typeof(Complex))
                 AssertComplexAreEqual((Complex)(object)actual, (Complex)(object)expected);
             else

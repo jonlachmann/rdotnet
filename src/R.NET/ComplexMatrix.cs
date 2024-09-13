@@ -55,17 +55,17 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
                     var data = new double[2];
-                    int offset = GetOffset(rowIndex, columnIndex);
-                    IntPtr pointer = IntPtr.Add(DataPointer, offset);
+                    var offset = GetOffset(rowIndex, columnIndex);
+                    var pointer = IntPtr.Add(DataPointer, offset);
                     Marshal.Copy(pointer, data, 0, data.Length);
                     return new Complex(data[0], data[1]);
                 }
@@ -74,17 +74,17 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
                     var data = new[] { value.Real, value.Imaginary };
-                    int offset = GetOffset(rowIndex, columnIndex);
-                    IntPtr pointer = IntPtr.Add(DataPointer, offset);
+                    var offset = GetOffset(rowIndex, columnIndex);
+                    var pointer = IntPtr.Add(DataPointer, offset);
                     Marshal.Copy(data, 0, pointer, data.Length);
                 }
             }
@@ -107,7 +107,7 @@ namespace RDotNet
         /// <returns>Rectangular array with values representing the content of the R matrix. Beware NA codes</returns>
         protected override Complex[,] GetArrayFast()
         {
-            int n = this.ItemCount;
+            var n = this.ItemCount;
             var data = new double[2 * n];
             Marshal.Copy(DataPointer, data, 0, 2 * n);
             var oneDim = RTypesUtil.DeserializeComplexFromDouble(data);
@@ -117,9 +117,6 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of a complex number in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return Marshal.SizeOf(typeof(Complex)); }
-        }
+        protected override int DataSize => Marshal.SizeOf(typeof(Complex));
     }
 }

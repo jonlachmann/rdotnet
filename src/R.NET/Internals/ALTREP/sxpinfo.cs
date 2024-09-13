@@ -13,69 +13,30 @@ namespace RDotNet.Internals.ALTREP
 
         private const int NAMED_BITS = 16;
 
-        public SymbolicExpressionType type  // 5 bits
-        {
-            get { return (SymbolicExpressionType)(this.bits & 31u); }
-        }
+        public SymbolicExpressionType type => (SymbolicExpressionType)(bits & 31u); // 5 bits
 
-        public uint scalar    // 1 bit
-        {
-            get { return (uint)((this.bits & 32u) / 32); }
-        }
+        public uint scalar => (uint)((bits & 32u) / 32); // 1 bit
 
-        public uint obj   // 1 bit
-        {
-            get { return (uint)((this.bits & 64u) / 64); }
-        }
+        public uint obj => (uint)((bits & 64u) / 64); // 1 bit
 
-        public uint alt   // 1 bit
-        {
-            get { return (uint)((this.bits & 128u) / 128); }
-        }
+        public uint alt => (uint)((bits & 128u) / 128); // 1 bit
 
-        public uint gp    // 16 bits
-        {
-            get { return (uint)((this.bits & 16776960u) / 256); }
-        }
+        public uint gp => (uint)((bits & 16776960u) / 256); // 16 bits
 
-        public uint mark  // 1 bit
-        {
-            get { return (uint)((this.bits & 16777216u) / 16777216); }
-        }
+        public uint mark => (uint)((bits & 16777216u) / 16777216); // 1 bit
 
-        public uint debug // 1 bit
-        {
-            get { return (uint)((this.bits & 33554432u) / 33554432); }
-        }
+        public uint debug => (uint)((bits & 33554432u) / 33554432); // 1 bit
 
-        public uint trace // 1 bit
-        {
-            get { return (uint)((this.bits & 67108864u) / 67108864); }
-        }
+        public uint trace => (uint)((bits & 67108864u) / 67108864); // 1 bit
 
-        public uint spare // 1 bit
-        {
-            get { return (uint)((this.bits & 134217728u) / 134217728); }
-        }
+        public uint spare => (uint)((bits & 134217728u) / 134217728); // 1 bit
 
-        public uint gcgen // 1 bit
-        {
-            get { return (uint)((this.bits & 268435456u) / 268435456); }
-        }
+        public uint gcgen => (uint)((bits & 268435456u) / 268435456); // 1 bit
 
-        public uint gccls // 3 bits
-        {
-            get { return (uint)((this.bits & 3758096384u) / 536870912); }
-        }
+        public uint gccls => (uint)((bits & 3758096384u) / 536870912); // 3 bits
 
-        public uint named // NAMED_BITS
-        {
-            get { return (uint)((this.bits & 281470681743360u) / 4294967296); }
-        }
+        public uint named => (uint)((bits & 281470681743360u) / 4294967296); // NAMED_BITS
 
-        public uint extra // 32 - NAMED_BITS
-        {
-            get { return (uint)((this.bits & 18446462598732800000u) / 281474976710656); }
-        }
+        public uint extra => (uint)((bits & 18446462598732800000u) / 281474976710656); // 32 - NAMED_BITS
     }
 }

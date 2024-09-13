@@ -21,10 +21,10 @@ namespace RDotNet
 
         public static IntPtr NativeUtf8FromString(string stringToConvert)
         {
-            int len = Encoding.UTF8.GetByteCount(stringToConvert);
-            byte[] buffer = new byte[len + 1];
+            var len = Encoding.UTF8.GetByteCount(stringToConvert);
+            var buffer = new byte[len + 1];
             Encoding.UTF8.GetBytes(stringToConvert, 0, stringToConvert.Length, buffer, 0);
-            IntPtr nativeUtf8 = Marshal.AllocHGlobal(buffer.Length);
+            var nativeUtf8 = Marshal.AllocHGlobal(buffer.Length);
             Marshal.Copy(buffer, 0, nativeUtf8, buffer.Length);
             return nativeUtf8;
         }
@@ -36,9 +36,9 @@ namespace RDotNet
 
         public static string StringFromNativeUtf8(IntPtr utf8)
         {
-            int len = 0;
+            var len = 0;
             while (Marshal.ReadByte(utf8, len) != 0) ++len;
-            byte[] buffer = new byte[len];
+            var buffer = new byte[len];
             Marshal.Copy(utf8, buffer, 0, buffer.Length);
             return Encoding.UTF8.GetString(buffer);
         }
@@ -79,7 +79,7 @@ namespace RDotNet
         /// <seealso cref="GetInternalValue()"/>
         public override string ToString()
         {
-            return StringFromNativeUtf8(this.DataPointer);
+            return StringFromNativeUtf8(DataPointer);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace RDotNet
             {
                 return null;
             }
-            return StringFromNativeUtf8(this.DataPointer);
+            return StringFromNativeUtf8(DataPointer);
         }
 
         /// <summary>
@@ -103,15 +103,14 @@ namespace RDotNet
         {
             get
             {
-                switch (Engine.Compatibility)
+                return Engine.Compatibility switch
                 {
-                    case REngine.CompatibilityMode.ALTREP:
-                        return GetFunction<DATAPTR_OR_NULL>()(this.DangerousGetHandle());
-                    case REngine.CompatibilityMode.PreALTREP:
-                        return IntPtr.Add(handle, Marshal.SizeOf(typeof(Internals.PreALTREP.VECTOR_SEXPREC)));
-                    default:
-                        throw new MemberAccessException("Unable to translate the DataPointer for this R compatibility mode");
-                }
+                    REngine.CompatibilityMode.ALTREP => GetFunction<DATAPTR_OR_NULL>()(DangerousGetHandle()),
+                    REngine.CompatibilityMode.PreALTREP => IntPtr.Add(handle,
+                        Marshal.SizeOf(typeof(Internals.PreALTREP.VECTOR_SEXPREC))),
+                    _ => throw new MemberAccessException(
+                        "Unable to translate the DataPointer for this R compatibility mode")
+                };
             }
         }
     }

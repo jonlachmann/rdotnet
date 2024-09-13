@@ -54,15 +54,15 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
-                    int offset = GetOffset(rowIndex, columnIndex);
+                    var offset = GetOffset(rowIndex, columnIndex);
                     return Marshal.ReadByte(DataPointer, offset);
                 }
             }
@@ -70,15 +70,15 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
-                    int offset = GetOffset(rowIndex, columnIndex);
+                    var offset = GetOffset(rowIndex, columnIndex);
                     Marshal.WriteByte(DataPointer, offset, value);
                 }
             }
@@ -100,17 +100,14 @@ namespace RDotNet
         /// <returns>Array equivalent</returns>
         protected override byte[,] GetArrayFast()
         {
-            byte[] values = new byte[this.ItemCount];
+            var values = new byte[ItemCount];
             Marshal.Copy(DataPointer, values, 0, values.Length);
-            return ArrayConverter.ArrayConvertAllTwoDim(values, this.RowCount, this.ColumnCount);
+            return ArrayConverter.ArrayConvertAllTwoDim(values, RowCount, ColumnCount);
         }
 
         /// <summary>
         /// Gets the size of an Raw in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return sizeof(byte); }
-        }
+        protected override int DataSize => sizeof(byte);
     }
 }

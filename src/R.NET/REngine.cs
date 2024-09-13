@@ -34,38 +34,39 @@ namespace RDotNet
     public class REngine : DynamicInterop.UnmanagedDll
     {
         /// <summary>
-        /// Flag for working on pre or post R 3.5 and its ALTREP mode.  
+        /// Flag for working on pre or post R 3.5 and its ALTREP mode.
         /// </summary>
         public enum CompatibilityMode
         {
             /// <summary>
             /// Pre ALTREP includes all versions before R 3.5.  This uses a 32-bit sxpinfo structure.
             /// </summary>
+            // ReSharper disable once InconsistentNaming
             PreALTREP = 0,
 
             /// <summary>
             /// ALTREP includes all versions R 3.5 and above.  Core header structures were introduced in R 3.5 with
             /// the ALTREP feature which required introducing the compability mode.  It uses a 64-bit sxpinfo structure.
             /// </summary>
+            // ReSharper disable once InconsistentNaming
             ALTREP = 1
         }
 
         private static readonly ICharacterDevice DefaultDevice = new ConsoleDevice();
 
-        private readonly string id;
-        private CharacterDeviceAdapter adapter;
-        private bool isRunning;
-        private StartupParameter parameter;
-        private static bool environmentIsSet = false;
-        private static NativeUtility nativeUtil = null;
-        private static REngine engine = null;
-        
-        // Type cache to allow faster dynamic casting
-        private static Type sexprecType = null;
-        private static Type symsxpType = null;
-        private static Type vectorSexprecType = null;
+        private readonly string _id;
+        private CharacterDeviceAdapter _adapter;
+        private StartupParameter _parameter;
+        private static bool _environmentIsSet;
+        private static NativeUtility _nativeUtil;
+        private static REngine _engine;
 
-        private static readonly char[] RDllVersionDelimiter = new[] {'.'};
+        // Type cache to allow faster dynamic casting
+        private static Type _sexprecType;
+        private static Type _symsxpType;
+        private static Type _vectorSexprecType;
+
+        private static readonly char[] RDllVersionDelimiter = {'.'};
 
         /// <summary>
         /// Create a new REngine instance
@@ -75,11 +76,11 @@ namespace RDotNet
         protected REngine(string id, string dll)
             : base(dll)
         {
-            this.id = id;
-            this.isRunning = false;
-            this.Disposed = false;
-            this.EnableLock = true; // See https://rdotnet.codeplex.com/workitem/113; it seems wise to enable it by default.
-            this.AutoPrint = false;  // 2019-05 changing to false by default, as this impacts the default performance drastically. There was an argument for a true default, but now I things this is superseded.
+            _id = id;
+            IsRunning = false;
+            Disposed = false;
+            EnableLock = true; // See https://rdotnet.codeplex.com/workitem/113; it seems wise to enable it by default.
+            AutoPrint = false;  // 2019-05 changing to false by default, as this impacts the default performance drastically. There was an argument for a true default, but now I things this is superseded.
         }
 
         /// <summary>
@@ -92,10 +93,7 @@ namespace RDotNet
         /// <summary>
         /// Gets whether this instance is running.
         /// </summary>
-        public bool IsRunning
-        {
-            get { return this.isRunning; }
-        }
+        public bool IsRunning { get; private set; }
 
         /// <summary>
         /// Gets the version of R.DLL.
@@ -119,10 +117,7 @@ namespace RDotNet
         /// <summary>
         /// Gets the ID of this instance.
         /// </summary>
-        public string ID
-        {
-            get { return this.id; }
-        }
+        public string ID => this._id;
 
         /// <summary>
         /// Gets the R compatibility mode, based on the version of R used.
@@ -201,7 +196,7 @@ namespace RDotNet
         /// <summary>
         /// Gets the name of the R engine instance (singleton).
         /// </summary>
-        public static string EngineName { get { return "R.NET"; } }
+        public static string EngineName => "R.NET";
 
         /// <summary>
         /// Gets a reference to the R engine, creating and initializing it if necessary. In most cases users need not provide any parameter to this method.
@@ -230,17 +225,17 @@ namespace RDotNet
         /// </example>
         public static REngine GetInstance(string dll = null, bool initialize = true, StartupParameter parameter = null, ICharacterDevice device = null)
         {
-            if (!environmentIsSet) // should there be a warning? and how?
+            if (!_environmentIsSet) // should there be a warning? and how?
                 SetEnvironmentVariables();
-            if (engine == null)
+            if (_engine == null)
             {
-                engine = CreateInstance(EngineName, dll);
+                _engine = CreateInstance(EngineName, dll);
                 if (initialize)
-                    engine.Initialize(parameter, device);
+                    _engine.Initialize(parameter, device);
             }
-            if (engine.Disposed)
+            if (_engine.Disposed)
                 throw new InvalidOperationException("The single REngine instance has already been disposed of (i.e. shut down). Multiple engine restart is not possible.");
-            return engine;
+            return _engine;
         }
 
         /// <summary>
@@ -251,14 +246,14 @@ namespace RDotNet
         /// <returns>The engine.</returns>
         private static REngine CreateInstance(string id, string dll = null)
         {
-            if (id == null)
+            switch (id)
             {
-                throw new ArgumentNullException("id", "Empty ID is not allowed.");
+                case null:
+                    throw new ArgumentNullException(nameof(id), "Empty ID is not allowed.");
+                case "":
+                    throw new ArgumentException("Empty ID is not allowed.", nameof(id));
             }
-            if (id == string.Empty)
-            {
-                throw new ArgumentException("Empty ID is not allowed.", "id");
-            }
+
             dll = ProcessRDllFileName(dll);
             var engine = new REngine(id, dll);
             DetermineCompatibility(engine);
@@ -276,8 +271,8 @@ namespace RDotNet
             // compatibility version to support R 3.5+
             engine.Compatibility = CompatibilityMode.ALTREP;
 
-            if (NativeLibrary.NativeUtility.IsUnix)
-                // engine.DllVersion is not implemented because the R native library has no entry point to getDllVersion which is Windows only. 
+            if (NativeUtility.IsUnix)
+                // engine.DllVersion is not implemented because the R native library has no entry point to getDllVersion which is Windows only.
                 // Not sure yet if there is a way to programatically query the R version on Linux, without bumping in a chicken and egg problem.
                 return;
 
@@ -292,44 +287,28 @@ namespace RDotNet
                 return;
             }
 
-            int major = 0;
-            int minor = 0;
-            if (int.TryParse(versionParts[0], out major) && int.TryParse(versionParts[1], out minor))
+            if (!int.TryParse(versionParts[0], out var major) || !int.TryParse(versionParts[1], out var minor)) return;
+            // Pre-ALTREP is <= 3.4
+            if (major <= 3 && minor <= 4)
             {
-                // Pre-ALTREP is <= 3.4
-                if (major <= 3 && minor <= 4)
-                {
-                    engine.Compatibility = CompatibilityMode.PreALTREP;
-                }
-                else
-                {
-                    engine.Compatibility = CompatibilityMode.ALTREP;
-                }
+                engine.Compatibility = CompatibilityMode.PreALTREP;
+            }
+            else
+            {
+                engine.Compatibility = CompatibilityMode.ALTREP;
             }
         }
         /// <summary>
         /// Gets the type of SEXPREC pre or post ALTREP
         /// </summary>
         /// <returns></returns>
-        public Type GetSEXPRECType()
-        {
-            if (sexprecType == null)
+        public Type GetSEXPRECType() =>
+            _sexprecType ??= Compatibility switch
             {
-                switch (Compatibility)
-                {
-                    case CompatibilityMode.ALTREP:
-                        sexprecType = typeof (RDotNet.Internals.ALTREP.SEXPREC);
-                        break;
-                    case CompatibilityMode.PreALTREP:
-                        sexprecType = typeof (RDotNet.Internals.PreALTREP.SEXPREC);
-                        break;
-                    default:
-                        throw new InvalidCastException("No SEXPREC type is available for this compatibility level");
-                }
-            }
-
-            return sexprecType;
-        }
+                CompatibilityMode.ALTREP => typeof(Internals.ALTREP.SEXPREC),
+                CompatibilityMode.PreALTREP => typeof(Internals.PreALTREP.SEXPREC),
+                _ => throw new InvalidCastException("No SEXPREC type is available for this compatibility level")
+            };
 
         /// <summary>
         /// Gets the type of symsxp pre or post ALTREP
@@ -337,22 +316,12 @@ namespace RDotNet
         /// <returns></returns>
         public Type GetSymSxpType()
         {
-            if (symsxpType == null)
+            return _symsxpType ??= Compatibility switch
             {
-                switch (Compatibility)
-                {
-                    case CompatibilityMode.ALTREP:
-                        symsxpType = typeof(RDotNet.Internals.ALTREP.symsxp);
-                        break;
-                    case CompatibilityMode.PreALTREP:
-                        symsxpType = typeof(RDotNet.Internals.PreALTREP.symsxp);
-                        break;
-                    default:
-                        throw new InvalidCastException("No symsxp type is available for this compatibility level");
-                }
-            }
-
-            return symsxpType;
+                CompatibilityMode.ALTREP => typeof(Internals.ALTREP.symsxp),
+                CompatibilityMode.PreALTREP => typeof(Internals.PreALTREP.symsxp),
+                _ => throw new InvalidCastException("No symsxp type is available for this compatibility level")
+            };
         }
 
         /// <summary>
@@ -361,22 +330,12 @@ namespace RDotNet
         /// <returns></returns>
         public Type GetVectorSexprecType()
         {
-            if (vectorSexprecType == null)
+            return _vectorSexprecType ??= Compatibility switch
             {
-                switch (Compatibility)
-                {
-                    case CompatibilityMode.ALTREP:
-                        vectorSexprecType = typeof(RDotNet.Internals.ALTREP.VECTOR_SEXPREC);
-                        break;
-                    case CompatibilityMode.PreALTREP:
-                        vectorSexprecType = typeof(RDotNet.Internals.PreALTREP.VECTOR_SEXPREC);
-                        break;
-                    default:
-                        throw new InvalidCastException("No symsxp type is available for this compatibility level");
-                }
-            }
-
-            return vectorSexprecType;
+                CompatibilityMode.ALTREP => typeof(Internals.ALTREP.VECTOR_SEXPREC),
+                CompatibilityMode.PreALTREP => typeof(Internals.PreALTREP.VECTOR_SEXPREC),
+                _ => throw new InvalidCastException("No symsxp type is available for this compatibility level")
+            };
         }
 
         /// <summary>
@@ -386,18 +345,17 @@ namespace RDotNet
         /// <returns>A candidate for the file name of the R shared library</returns>
         protected static string ProcessRDllFileName(string dll)
         {
-            if (!string.IsNullOrEmpty(dll)) return dll;
-            return NativeUtility.GetRLibraryFileName();
+            return !string.IsNullOrEmpty(dll) ? dll : NativeUtility.GetRLibraryFileName();
         }
 
-        static private string EncodeNonAsciiCharacters(string value)
+        private static string EncodeNonAsciiCharacters(string value)
         {
-            StringBuilder sb = new StringBuilder();
-            foreach (char c in value)
+            var sb = new StringBuilder();
+            foreach (var c in value)
             {
                 if (c > 127)
                 {
-                    string encodedValue = "\\u" + ((int)c).ToString("x4");
+                    var encodedValue = "\\u" + ((int)c).ToString("x4");
                     sb.Append(encodedValue);
                 }
                 else
@@ -420,16 +378,16 @@ namespace RDotNet
         /// </remarks>
         public static void SetEnvironmentVariables(string rPath = null, string rHome = null)
         {
-            environmentIsSet = true;
-            REngine.nativeUtil = new NativeUtility();
-            nativeUtil.SetEnvironmentVariables(rPath: rPath, rHome: rHome);
+            _environmentIsSet = true;
+            _nativeUtil = new NativeUtility();
+            _nativeUtil.SetEnvironmentVariables(rPath: rPath, rHome: rHome);
         }
 
-        private static void resetCachedEnvironmentVariables()
+        private static void ResetCachedEnvironmentVariables()
         {
-            if (environmentIsSet != true)
+            if (_environmentIsSet != true)
                 throw new Exception("resetCachedEnvironmentVariables cannot be called if the R environment variables were not first set");
-            nativeUtil.SetCachedEnvironmentVariables();
+            _nativeUtil.SetCachedEnvironmentVariables();
         }
 
         /// <summary>
@@ -441,11 +399,11 @@ namespace RDotNet
         public void Initialize(StartupParameter parameter = null, ICharacterDevice device = null, bool setupMainLoop = true)
         {
             //         Console.WriteLine("REngine.Initialize start");
-            if (this.isRunning)
+            if (IsRunning)
                 return;
             //         Console.WriteLine("REngine.Initialize, after isRunning checked as false");
-            this.parameter = parameter ?? this.DefaultStartupParameter();
-            this.adapter = new CharacterDeviceAdapter(device ?? DefaultDevice);
+            _parameter = parameter ?? DefaultStartupParameter();
+            _adapter = new CharacterDeviceAdapter(device ?? DefaultDevice);
             // Disabling the stack checking here, to try to avoid the issue on Linux.
             // The disabling used to be here around end Nov 2013. Was moved later in this
             // function to cater for disabling on Windows, @ rev 305, however this may have
@@ -455,15 +413,15 @@ namespace RDotNet
 
             if (!setupMainLoop)
             {
-                this.isRunning = true;
+                IsRunning = true;
                 return;
             }
 
-            string[] R_argv = BuildRArgv(this.parameter);
+            var R_argv = BuildRArgv(_parameter);
             //string[] R_argv = new[]{"rdotnet_app",  "--interactive",  "--no-save",  "--no-restore-data",  "--max-ppsize=50000"};
             //rdotnet_app --quiet --interactive --no-save --no-restore-data --max-mem-size=18446744073709551615 --max-ppsize=50000
             GetFunction<R_setStartTime>()();
-            int R_argc = R_argv.Length;
+            var R_argc = R_argv.Length;
             //         Console.WriteLine("Initialize-R_setStartTime; R_CStackLimit value is " + GetDangerousInt32("R_CStackLimit"));
 
             if (NativeUtility.GetPlatform() == PlatformID.Win32NT)
@@ -481,26 +439,26 @@ namespace RDotNet
                 throw new Exception("A call to Rf_initialize_R returned a non-zero; status=" + status);
             if (NativeUtility.GetPlatform() == PlatformID.Win32NT)
                 // also workaround for https://github.com/rdotnet/rdotnet/issues/127  : R.dll is intent on overriding R_HOME and PATH even if --no-environ is specified...
-                resetCachedEnvironmentVariables();
+                ResetCachedEnvironmentVariables();
             //         Console.WriteLine("Initialize-Rf_initialize_R; R_CStackLimit value is " + GetDangerousInt32("R_CStackLimit"));
             SetCstackChecking();
 
             // following in RInside: may not be needed.
             //GetFunction<R_ReplDLLinit> () ();
             //this.parameter.Interactive = true;
-            this.adapter.Install(this, this.parameter);
+            _adapter.Install(this, _parameter);
             //Console.WriteLine("Initialize-adapter installation; R_CStackLimit value is " + GetDangerousInt32("R_CStackLimit"));
             switch (NativeUtility.GetPlatform())
             {
                 case PlatformID.Win32NT:
-                    GetFunction<R_SetParams_Windows>("R_SetParams")(ref this.parameter.start);
+                    GetFunction<R_SetParams_Windows>("R_SetParams")(ref this._parameter.Start);
                     // also workaround for https://github.com/rdotnet/rdotnet/issues/127  : R.dll is intent on overriding R_HOME and PATH even if --no-environ is specified...
-                    resetCachedEnvironmentVariables();
+                    ResetCachedEnvironmentVariables();
                     break;
 
                 case PlatformID.MacOSX:
                 case PlatformID.Unix:
-                    GetFunction<R_SetParams_Unix>("R_SetParams")(ref this.parameter.start.Common);
+                    GetFunction<R_SetParams_Unix>("R_SetParams")(ref this._parameter.Start.Common);
                     //Console.WriteLine("Initialize-R_SetParams_Unix; R_CStackLimit value is " + GetDangerousInt32("R_CStackLimit"));
                     break;
             }
@@ -509,30 +467,30 @@ namespace RDotNet
 
             // See comments in the first call to SetCstackChecking in this function as to why we (may) need it twice.
             SetCstackChecking();
-            this.isRunning = true;
+            IsRunning = true;
 
             //Console.WriteLine("Initialize-just before leaving; R_CStackLimit value is " + GetDangerousInt32("R_CStackLimit"));
 
-            if (NativeUtility.GetPlatform() == PlatformID.Win32NT)
-            {
-                // also workaround for https://github.com/rdotnet/rdotnet/issues/127  : R.dll is intent on overriding R_HOME and PATH even if --no-environ is specified...
-                resetCachedEnvironmentVariables();
-                // Partial Workaround (hopefully temporary) for https://rdotnet.codeplex.com/workitem/110
-                Evaluate(string.Format("invisible(memory.limit({0}))", (this.parameter.MaxMemorySize / 1048576UL)));
-            }
+            if (NativeUtility.GetPlatform() != PlatformID.Win32NT) return;
+            // also workaround for https://github.com/rdotnet/rdotnet/issues/127  : R.dll is intent on overriding R_HOME and PATH even if --no-environ is specified...
+            ResetCachedEnvironmentVariables();
+            // Partial Workaround (hopefully temporary) for https://rdotnet.codeplex.com/workitem/110
+            Evaluate($"invisible(memory.limit({_parameter.MaxMemorySize / 1048576UL}))");
         }
 
-        private StartupParameter DefaultStartupParameter()
+        private static StartupParameter DefaultStartupParameter()
         {
-            var p = new StartupParameter();
-            // to avoid https://github.com/rdotnet/rdotnet/issues/127 ?
-            p.NoRenviron = true;
-            p.LoadInitFile = false;
-            p.LoadSiteFile = false;
+            var p = new StartupParameter
+            {
+                // to avoid https://github.com/rdotnet/rdotnet/issues/127 ?
+                NoRenviron = true,
+                LoadInitFile = false,
+                LoadSiteFile = false
+            };
             return p;
         }
 
-        private static void currentEnvVars(out string path, out string rhome)
+        private static void CurrentEnvVars(out string path, out string rhome)
         {
             path = Environment.GetEnvironmentVariable("PATH");
             rhome = Environment.GetEnvironmentVariable("R_HOME");
@@ -566,8 +524,7 @@ namespace RDotNet
         public static string[] BuildRArgv(StartupParameter parameter)
         {
             var platform = NativeUtility.GetPlatform();
-            var argv = new List<string>();
-            argv.Add("rdotnet_app");
+            var argv = new List<string> { "rdotnet_app" };
             // Not sure whether I should add no-readline
             //[MarshalAs(UnmanagedType.Bool)]
             //public bool R_Quiet;
@@ -673,10 +630,7 @@ namespace RDotNet
         public SymbolicExpression GetSymbol(string name, REnvironment environment)
         {
             CheckEngineIsRunning();
-            if (environment == null)
-            {
-                environment = GlobalEnvironment;
-            }
+            environment ??= GlobalEnvironment;
             return environment.GetSymbol(name);
         }
 
@@ -700,10 +654,7 @@ namespace RDotNet
         public void SetSymbol(string name, SymbolicExpression expression, REnvironment environment)
         {
             CheckEngineIsRunning();
-            if (environment == null)
-            {
-                environment = GlobalEnvironment;
-            }
+            environment ??= GlobalEnvironment;
             environment.SetSymbol(name, expression);
         }
 
@@ -740,24 +691,18 @@ namespace RDotNet
         private IEnumerable<SymbolicExpression> Defer(string statement, REnvironment environment = null)
         {
             CheckEngineIsRunning();
-            if (statement == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(statement);
 
-            using (TextReader reader = new StringReader(statement))
+            using TextReader reader = new StringReader(statement);
+            var incompleteStatement = new StringBuilder();
+            while (reader.ReadLine() is { } line)
             {
-                var incompleteStatement = new StringBuilder();
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                foreach (var segment in Segment(line))
                 {
-                    foreach (var segment in Segment(line))
+                    var result = Parse(segment, incompleteStatement, environment);
+                    if (result != null)
                     {
-                        var result = Parse(segment, incompleteStatement, environment);
-                        if (result != null)
-                        {
-                            yield return result;
-                        }
+                        yield return result;
                     }
                 }
             }
@@ -772,28 +717,22 @@ namespace RDotNet
         public IEnumerable<SymbolicExpression> Defer(Stream stream, REnvironment environment = null)
         {
             CheckEngineIsRunning();
-            if (stream == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(stream);
             if (!stream.CanRead)
             {
                 throw new ArgumentException();
             }
 
-            using (TextReader reader = new StreamReader(stream))
+            using TextReader reader = new StreamReader(stream);
+            var incompleteStatement = new StringBuilder();
+            while (reader.ReadLine() is { } line)
             {
-                var incompleteStatement = new StringBuilder();
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                foreach (var segment in Segment(line))
                 {
-                    foreach (var segment in Segment(line))
+                    var result = Parse(segment, incompleteStatement, environment);
+                    if (result != null)
                     {
-                        var result = Parse(segment, incompleteStatement, environment);
-                        if (result != null)
-                        {
-                            yield return result;
-                        }
+                        yield return result;
                     }
                 }
             }
@@ -801,7 +740,7 @@ namespace RDotNet
 
         private static IEnumerable<string> Segment(string line)
         {
-            var segments = processInputString(line);
+            var segments = ProcessInputString(line);
             for (var index = 0; index < segments.Length; index++)
             {
                 if (index == segments.Length - 1)
@@ -818,16 +757,16 @@ namespace RDotNet
             }
         }
 
-        private static string[] processInputString(string input)
+        private static string[] ProcessInputString(string input)
         {
             // Fixes for
             // https://rdotnet.codeplex.com/workitem/165
             // https://github.com/jmp75/rdotnet/issues/14
-            string[] lines = splitOnNewLines(input);
-            List<string> statements = new List<string>();
-            for (int i = 0; i < lines.Length; i++)
+            var lines = splitOnNewLines(input);
+            var statements = new List<string>();
+            foreach (var t in lines)
             {
-                statements.AddRange(processLine(lines[i]));
+                statements.AddRange(ProcessLine(t));
             }
             return statements.ToArray();
         }
@@ -838,57 +777,57 @@ namespace RDotNet
             return input.Split('\n');
         }
 
-        private static string[] processLine(string line)
+        private static string[] ProcessLine(string line)
         {
             var trimmedLine = line.Trim();
             if (trimmedLine == string.Empty)
-                return new string[] { };
+                return Array.Empty<string>();
             if (trimmedLine.StartsWith("#"))
                 return new string[] { line };
 
-            string theRest;
-            string statement = splitOnFirst(line, out theRest, ';');
+            var statement = splitOnFirst(line, out var theRest, ';');
 
             var result = new List<string>();
-            if (!statement.Contains("#"))
+            if (!statement.Contains('#'))
             {
                 result.Add(statement);
-                result.AddRange(processLine(theRest));
+                result.AddRange(ProcessLine(theRest));
             }
             else
             {
                 // paste('this contains ### characters', " this too ###", 'Oh, and this # one too') # but "this" 'rest' is commented
-                // Find the fist # character such that before that, there is an 
+                // Find the fist # character such that before that, there is an
                 // even number of " and an even number of ' characters
 
-                int[] whereHash = IndexOfAll(statement, "#");
-                int firstComment = EvenStringDelimitors(statement, whereHash);
+                var whereHash = IndexOfAll(statement, "#");
+                var firstComment = EvenStringDelimitors(statement, whereHash);
                 if (firstComment < 0)
                 // incomplete statement??? such as:
                 // paste('this is the # ', ' start of an incomplete # statement
                 {
                     result.Add(statement);
-                    result.AddRange(processLine(theRest));
+                    result.AddRange(ProcessLine(theRest));
                 }
                 else
                 {
                     result.Add(statement.Substring(0, firstComment));
                     // firstComment is a valid comment marker - not need to process "the rest"
                 }
-                string restFirstStatement;
-                string beforeComment = splitOnFirst(statement, out restFirstStatement, '#');
+
+                var beforeComment = splitOnFirst(statement, out _, '#');
             }
             return result.ToArray();
         }
 
         private static int EvenStringDelimitors(string statement, int[] whereHash)
         {
-            for (int i = 0; i < whereHash.Length; i++)
+            foreach (var t in whereHash)
             {
-                var s = statement.Substring(0, whereHash[i]);
+                var s = statement[..t];
                 if (IsClosedString(s))
-                    return whereHash[i];
+                    return t;
             }
+
             return -1;
         }
 
@@ -900,7 +839,7 @@ namespace RDotNet
             // paste('#hashtag""#""')
             // paste('#hashtag""#""', "#hash ''' ")
             bool inSingleQuote = false, inDoubleQuotes = false;
-            for (int i = 0; i < s.Length; i++)
+            for (var i = 0; i < s.Length; i++)
             {
                 if (s[i] == '\'')
                 {
@@ -911,26 +850,22 @@ namespace RDotNet
                         continue;
                     inSingleQuote = !inSingleQuote;
                 }
-                if (s[i] == '"')
-                {
-                    if (i > 0)
-                        if (s[i - 1] == '\\')
-                            continue;
-                    if (inSingleQuote)
+
+                if (s[i] != '"') continue;
+                if (i > 0)
+                    if (s[i - 1] == '\\')
                         continue;
-                    inDoubleQuotes = !inDoubleQuotes;
-                }
+                if (inSingleQuote)
+                    continue;
+                inDoubleQuotes = !inDoubleQuotes;
             }
-            return (!inSingleQuote) && (!inDoubleQuotes);
+            return !inSingleQuote && !inDoubleQuotes;
         }
 
         private static string splitOnFirst(string statement, out string rest, char sep)
         {
             var split = statement.Split(new[] { sep }, 2);
-            if (split.Length == 1)
-                rest = string.Empty;
-            else
-                rest = split[1];
+            rest = split.Length == 1 ? string.Empty : split[1];
             return split[0];
         }
 
@@ -956,12 +891,11 @@ namespace RDotNet
         {
             incompleteStatement.Append(statement);
             var s = GetFunction<Rf_mkString>()(InternalString.NativeUtf8FromString(incompleteStatement.ToString()));
-            string errorStatement;
             using (new ProtectedPointer(this, s))
             {
-                ParseStatus status;
-                var vector = new ExpressionVector(this, GetFunction<R_ParseVector>()(s, -1, out status, NilValue.DangerousGetHandle()));
+                var vector = new ExpressionVector(this, GetFunction<R_ParseVector>()(s, -1, out var status, NilValue.DangerousGetHandle()));
 
+                string errorStatement;
                 switch (status)
                 {
                     case ParseStatus.OK:
@@ -972,8 +906,7 @@ namespace RDotNet
                         }
                         using (new ProtectedPointer(vector))
                         {
-                            SymbolicExpression result;
-                            if (!vector.First().TryEvaluate((environment == null) ? GlobalEnvironment : environment, out result))
+                            if (!vector.First().TryEvaluate(environment ?? GlobalEnvironment, out var result))
                             {
                                 throw new EvaluationException(LastErrorMessage);
                             }
@@ -1012,13 +945,10 @@ namespace RDotNet
             var symbol = DangerousGetHandle("R_Visible");
             // If the R_Visible symbol is not exported by the current R engine (happens on R-2.14.1), then just return 'true'
             // https://github.com/BlueMountainCapital/FSharpRProvider/pull/152
-            if (symbol == (System.IntPtr)0) return true;
-            else
-            {
-                var value = Marshal.ReadInt32(symbol);
-                var result = Convert.ToBoolean(value);
-                return result;
-            }
+            if (symbol == 0) return true;
+            var value = Marshal.ReadInt32(symbol);
+            var result = Convert.ToBoolean(value);
+            return result;
         }
 
         /// <summary>
@@ -1027,7 +957,7 @@ namespace RDotNet
         /// <remarks>do_geterrmessage is in Rdll.hide, so we cannot access at the C API level.
         /// We use the 'geterrmessage()' R evaluation, but not using the same mechanism as other REngine evaluation
         /// to avoid recursions issues</remarks>
-        private Expression geterrmessage = null;
+        private Expression _geterrmessage = null;
 
         /// <summary>
         /// Gets the last error message in the R engine; see R function geterrmessage.
@@ -1036,30 +966,28 @@ namespace RDotNet
         {
             get
             {
-                if (geterrmessage == null)
+                if (_geterrmessage == null)
                 {
-                    var statement = "geterrmessage()\n";
+                    const string statement = "geterrmessage()\n";
                     var s = GetFunction<Rf_mkString>()(InternalString.NativeUtf8FromString(statement));
-                    ParseStatus status;
-                    var vector = new ExpressionVector(this, GetFunction<R_ParseVector>()(s, -1, out status, NilValue.DangerousGetHandle()));
+                    var vector = new ExpressionVector(this, GetFunction<R_ParseVector>()(s, -1, out var status, NilValue.DangerousGetHandle()));
                     if (status != ParseStatus.OK)
                         throw new ParseException(status, statement, "");
                     if (vector.Length == 0)
                         throw new ParseException(status, statement, "Failed to create expression vector!");
-                    geterrmessage = vector.First();
+                    _geterrmessage = vector.First();
                 }
-                SymbolicExpression result;
-                if (geterrmessage.TryEvaluate(GlobalEnvironment, out result))
-                {
-                    var msgs = SymbolicExpressionExtension.AsCharacter(result).ToArray();
-                    if (msgs.Length > 1)
-                        throw new Exception("Unexpected multiple error messages returned");
-                    if (msgs.Length == 0)
-                        throw new Exception("No error messages returned (zero length)");
-                    return msgs[0];
-                }
-                else
-                    throw new EvaluationException("Unable to retrieve an R error message. Evaluating 'geterrmessage()' fails. The R engine is not in a working state.");
+
+                if (!_geterrmessage.TryEvaluate(GlobalEnvironment, out var result))
+                    throw new EvaluationException(
+                        "Unable to retrieve an R error message. Evaluating 'geterrmessage()' fails. The R engine is not in a working state.");
+                var msgs = result.AsCharacter().ToArray();
+                if (msgs.Length > 1)
+                    throw new Exception("Unexpected multiple error messages returned");
+                if (msgs.Length == 0)
+                    throw new Exception("No error messages returned (zero length)");
+                return msgs[0];
+
             }
         }
 
@@ -1085,10 +1013,7 @@ namespace RDotNet
         /// <param name="e"></param>
         protected virtual void OnDisposing(EventArgs e)
         {
-            if (Disposing != null)
-            {
-                Disposing(this, e);
-            }
+            Disposing?.Invoke(this, e);
         }
 
         /// <summary>
@@ -1102,7 +1027,7 @@ namespace RDotNet
         /// <param name="disposing">if true, release native resources, using the native R API to clean up.</param>
         protected override void Dispose(bool disposing)
         {
-            this.isRunning = false;
+            IsRunning = false;
             OnDisposing(EventArgs.Empty);
             if (disposing && !Disposed)
             {
@@ -1112,14 +1037,14 @@ namespace RDotNet
                 Disposed = true;
             }
 
-            if (disposing && this.adapter != null)
+            if (disposing && _adapter != null)
             {
-                this.adapter.Dispose();
-                this.adapter = null;
+                _adapter.Dispose();
+                _adapter = null;
             }
             if (Disposed)
                 return;
-            GC.KeepAlive(this.parameter);
+            GC.KeepAlive(_parameter);
             base.Dispose(disposing);
         }
 
@@ -1171,7 +1096,7 @@ namespace RDotNet
         public void ClearGlobalEnvironment(bool garbageCollectR = true, bool garbageCollectDotNet = true, bool removeHiddenRVars = false, bool detachPackages = false, string[] toDetach = null)
         {
             if (detachPackages)
-                doDetachPackages(toDetach);
+                DoDetachPackages(toDetach);
             var rmStatement = removeHiddenRVars ? "rm(list=ls(all.names=TRUE))" : "rm(list=ls())";
             this.Evaluate(rmStatement);
             if (garbageCollectDotNet)
@@ -1183,12 +1108,9 @@ namespace RDotNet
                 ForceGarbageCollection();
         }
 
-        private void doDetachPackages(string[] toDetach)
+        private void DoDetachPackages(string[] toDetach)
         {
-            if (toDetach == null)
-            {
-                toDetach = Evaluate("search()[2:(which(search()=='package:stats')-1)]").AsCharacter().ToArray();
-            }
+            toDetach ??= Evaluate("search()[2:(which(search()=='package:stats')-1)]").AsCharacter().ToArray();
             foreach (var dbName in toDetach)
             {
                 Evaluate("detach('" + dbName + "')");
@@ -1224,14 +1146,6 @@ namespace RDotNet
         /// <summary>
         /// SEXP representing NA for strings (character vectors in R terminology).
         /// </summary>
-        public SymbolicExpression NaString
-        {
-            get
-            {
-                if (stringNaSexp == null)
-                    stringNaSexp = this.GetPredefinedSymbol("R_NaString");
-                return stringNaSexp;
-            }
-        }
+        public SymbolicExpression NaString => stringNaSexp ??= GetPredefinedSymbol("R_NaString");
     }
 }

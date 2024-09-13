@@ -54,16 +54,16 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
-                    int offset = GetOffset(rowIndex, columnIndex);
-                    int data = Marshal.ReadInt32(DataPointer, offset);
+                    var offset = GetOffset(rowIndex, columnIndex);
+                    var data = Marshal.ReadInt32(DataPointer, offset);
                     return Convert.ToBoolean(data);
                 }
             }
@@ -71,16 +71,16 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
-                    int offset = GetOffset(rowIndex, columnIndex);
-                    int data = Convert.ToInt32(value);
+                    var offset = GetOffset(rowIndex, columnIndex);
+                    var data = Convert.ToInt32(value);
                     Marshal.WriteInt32(DataPointer, offset, data);
                 }
             }
@@ -102,7 +102,7 @@ namespace RDotNet
         /// <returns>Rectangular array with values representing the content of the R matrix. Beware NA codes</returns>
         protected override bool[,] GetArrayFast()
         {
-            int[] intValues = new int[this.ItemCount];
+            var intValues = new int[this.ItemCount];
             Marshal.Copy(DataPointer, intValues, 0, intValues.Length);
             return ArrayConverter.ArrayConvertAllTwoDim(intValues, Convert.ToBoolean, this.RowCount, this.ColumnCount);
         }
@@ -110,9 +110,6 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of an integer in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return sizeof(int); }
-        }
+        protected override int DataSize => sizeof(int);
     }
 }

@@ -61,7 +61,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override byte GetValue(int index)
         {
-            int offset = GetOffset(index);
+            var offset = GetOffset(index);
             return Marshal.ReadByte(DataPointer, offset);
         }
 
@@ -73,7 +73,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override byte GetValueAltRep(int index)
         {
-            return GetFunction<RAW_ELT>()(this.DangerousGetHandle(), (IntPtr)index);
+            return GetFunction<RAW_ELT>()(DangerousGetHandle(), index);
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValue(int index, byte value)
         {
-            int offset = GetOffset(index);
+            var offset = GetOffset(index);
             Marshal.WriteByte(DataPointer, offset, value);
         }
 
@@ -96,7 +96,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValueAltRep(int index, byte value)
         {
-            GetFunction<SET_RAW_ELT>()(this.DangerousGetHandle(), (IntPtr)index, value);
+            GetFunction<SET_RAW_ELT>()(DangerousGetHandle(), index, value);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace RDotNet
         /// <returns>Array equivalent</returns>
         protected override byte[] GetArrayFast()
         {
-            var res = new byte[this.Length];
+            var res = new byte[Length];
             Marshal.Copy(DataPointer, res, 0, res.Length);
             return res;
         }
@@ -122,10 +122,7 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of a byte value in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return sizeof(byte); }
-        }
+        protected override int DataSize => sizeof(byte);
 
         /// <summary>
         /// Copies the elements to the specified array.
@@ -136,10 +133,7 @@ namespace RDotNet
         /// <param name="destinationIndex">The first index of the destination array.</param>
         public new void CopyTo(byte[] destination, int length, int sourceIndex = 0, int destinationIndex = 0)
         {
-            if (destination == null)
-            {
-                throw new ArgumentNullException("destination");
-            }
+            ArgumentNullException.ThrowIfNull(destination);
             if (length < 0)
             {
                 throw new IndexOutOfRangeException("length");
@@ -153,8 +147,8 @@ namespace RDotNet
                 throw new IndexOutOfRangeException("destinationIndex");
             }
 
-            int offset = GetOffset(sourceIndex);
-            IntPtr pointer = IntPtr.Add(DataPointer, offset);
+            var offset = GetOffset(sourceIndex);
+            var pointer = IntPtr.Add(DataPointer, offset);
             Marshal.Copy(pointer, destination, destinationIndex, length);
         }
     }

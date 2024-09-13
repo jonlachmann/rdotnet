@@ -26,14 +26,8 @@ namespace RDotNet
         protected Matrix(REngine engine, SymbolicExpressionType type, int rowCount, int columnCount)
             : base(engine, engine.GetFunction<Rf_allocMatrix>()(type, rowCount, columnCount))
         {
-            if (rowCount <= 0)
-            {
-                throw new ArgumentOutOfRangeException("rowCount");
-            }
-            if (columnCount <= 0)
-            {
-                throw new ArgumentOutOfRangeException("columnCount");
-            }
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rowCount);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(columnCount);
             var empty = new byte[rowCount * columnCount * DataSize];
             Marshal.Copy(empty, 0, DataPointer, empty.Length);
         }
@@ -47,8 +41,6 @@ namespace RDotNet
         public Matrix(REngine engine, SymbolicExpressionType type, T[,] matrix)
             : base(engine, engine.GetFunction<Rf_allocMatrix>()(type, matrix.GetLength(0), matrix.GetLength(1)))
         {
-            int rowCount = RowCount;
-            int columnCount = ColumnCount;
             //InitMatrixWithIndexers(matrix, rowCount, columnCount);
             InitMatrixFast(matrix);
         }
@@ -94,50 +86,38 @@ namespace RDotNet
         {
             get
             {
-                if (rowName == null)
-                {
-                    throw new ArgumentNullException("rowName");
-                }
-                if (columnName == null)
-                {
-                    throw new ArgumentNullException("columnName");
-                }
-                string[] rowNames = RowNames;
+                ArgumentNullException.ThrowIfNull(rowName);
+                ArgumentNullException.ThrowIfNull(columnName);
+                var rowNames = RowNames;
                 if (rowNames == null)
                 {
                     throw new InvalidOperationException();
                 }
-                string[] columnNames = ColumnNames;
+                var columnNames = ColumnNames;
                 if (columnNames == null)
                 {
                     throw new InvalidOperationException();
                 }
-                int rowIndex = Array.IndexOf(rowNames, rowName);
-                int columnIndex = Array.IndexOf(columnNames, columnName);
+                var rowIndex = Array.IndexOf(rowNames, rowName);
+                var columnIndex = Array.IndexOf(columnNames, columnName);
                 return this[rowIndex, columnIndex];
             }
             set
             {
-                if (rowName == null)
-                {
-                    throw new ArgumentNullException("rowName");
-                }
-                if (columnName == null)
-                {
-                    throw new ArgumentNullException("columnName");
-                }
-                string[] rowNames = RowNames;
+                ArgumentNullException.ThrowIfNull(rowName);
+                ArgumentNullException.ThrowIfNull(columnName);
+                var rowNames = RowNames;
                 if (rowNames == null)
                 {
                     throw new InvalidOperationException();
                 }
-                string[] columnNames = ColumnNames;
+                var columnNames = ColumnNames;
                 if (columnNames == null)
                 {
                     throw new InvalidOperationException();
                 }
-                int rowIndex = Array.IndexOf(rowNames, rowName);
-                int columnIndex = Array.IndexOf(columnNames, columnName);
+                var rowIndex = Array.IndexOf(rowNames, rowName);
+                var columnIndex = Array.IndexOf(columnNames, columnName);
                 this[rowIndex, columnIndex] = value;
             }
         }
@@ -145,23 +125,17 @@ namespace RDotNet
         /// <summary>
         /// Gets the row size of elements.
         /// </summary>
-        public int RowCount
-        {
-            get { return this.GetFunction<Rf_nrows>()(handle); }
-        }
+        public int RowCount => GetFunction<Rf_nrows>()(handle);
 
         /// <summary>
         /// Gets the column size of elements.
         /// </summary>
-        public int ColumnCount
-        {
-            get { return this.GetFunction<Rf_ncols>()(handle); }
-        }
+        public int ColumnCount => GetFunction<Rf_ncols>()(handle);
 
         /// <summary>
         /// Gets the total number of items (rows times columns) in this matrix
         /// </summary>
-        public int ItemCount { get { return RowCount * ColumnCount; } }
+        public int ItemCount => RowCount * ColumnCount;
 
         /// <summary>
         /// Gets the names of rows.
@@ -170,19 +144,15 @@ namespace RDotNet
         {
             get
             {
-                SymbolicExpression dimnamesSymbol = Engine.GetPredefinedSymbol("R_DimNamesSymbol");
-                SymbolicExpression dimnames = GetAttribute(dimnamesSymbol);
-                if (dimnames == null)
-                {
-                    return null;
-                }
-                CharacterVector rowNames = dimnames.AsList()[0].AsCharacter();
+                var dimnamesSymbol = Engine.GetPredefinedSymbol("R_DimNamesSymbol");
+                var dimnames = GetAttribute(dimnamesSymbol);
+                var rowNames = dimnames?.AsList()[0].AsCharacter();
                 if (rowNames == null)
                 {
                     return null;
                 }
 
-                int length = rowNames.Length;
+                var length = rowNames.Length;
                 var result = new string[length];
                 rowNames.CopyTo(result, length);
                 return result;
@@ -196,19 +166,15 @@ namespace RDotNet
         {
             get
             {
-                SymbolicExpression dimnamesSymbol = Engine.GetPredefinedSymbol("R_DimNamesSymbol");
-                SymbolicExpression dimnames = GetAttribute(dimnamesSymbol);
-                if (dimnames == null)
-                {
-                    return null;
-                }
-                CharacterVector columnNames = dimnames.AsList()[1].AsCharacter();
+                var dimnamesSymbol = Engine.GetPredefinedSymbol("R_DimNamesSymbol");
+                var dimnames = GetAttribute(dimnamesSymbol);
+                var columnNames = dimnames?.AsList()[1].AsCharacter();
                 if (columnNames == null)
                 {
                     return null;
                 }
 
-                int length = columnNames.Length;
+                var length = columnNames.Length;
                 var result = new string[length];
                 columnNames.CopyTo(result, length);
                 return result;
@@ -222,15 +188,14 @@ namespace RDotNet
         {
             get
             {
-                switch (Engine.Compatibility)
+                return Engine.Compatibility switch
                 {
-                    case REngine.CompatibilityMode.ALTREP:
-                        return GetFunction<DATAPTR_OR_NULL>()(this.DangerousGetHandle()); 
-                    case REngine.CompatibilityMode.PreALTREP:
-                        return IntPtr.Add(handle, Marshal.SizeOf(typeof(Internals.PreALTREP.VECTOR_SEXPREC)));
-                    default:
-                        throw new MemberAccessException("Unable to translate the DataPointer for this R compatibility mode");
-                }
+                    REngine.CompatibilityMode.ALTREP => GetFunction<DATAPTR_OR_NULL>()(DangerousGetHandle()),
+                    REngine.CompatibilityMode.PreALTREP => IntPtr.Add(handle,
+                        Marshal.SizeOf(typeof(Internals.PreALTREP.VECTOR_SEXPREC))),
+                    _ => throw new MemberAccessException(
+                        "Unable to translate the DataPointer for this R compatibility mode")
+                };
             }
         }
 
@@ -262,10 +227,7 @@ namespace RDotNet
         /// <param name="destinationColumnIndex">The first column index of the destination array.</param>
         public void CopyTo(T[,] destination, int rowCount, int columnCount, int sourceRowIndex = 0, int sourceColumnIndex = 0, int destinationRowIndex = 0, int destinationColumnIndex = 0)
         {
-            if (destination == null)
-            {
-                throw new ArgumentNullException("destination");
-            }
+            ArgumentNullException.ThrowIfNull(destination);
             if (rowCount < 0)
             {
                 throw new IndexOutOfRangeException("rowCount");
@@ -293,11 +255,11 @@ namespace RDotNet
 
             while (--rowCount >= 0)
             {
-                int currentSourceRowIndex = sourceRowIndex++;
-                int currentDestinationRowIndex = destinationRowIndex++;
-                int currentColumnCount = columnCount;
-                int currentSourceColumnIndex = sourceColumnIndex;
-                int currentDestinationColumnIndex = destinationColumnIndex;
+                var currentSourceRowIndex = sourceRowIndex++;
+                var currentDestinationRowIndex = destinationRowIndex++;
+                var currentColumnCount = columnCount;
+                var currentSourceColumnIndex = sourceColumnIndex;
+                var currentDestinationColumnIndex = destinationColumnIndex;
                 while (--currentColumnCount >= 0)
                 {
                     destination[currentDestinationRowIndex, currentDestinationColumnIndex++] = this[currentSourceRowIndex, currentSourceColumnIndex++];
@@ -311,10 +273,8 @@ namespace RDotNet
         /// <returns></returns>
         public T[,] ToArray()
         {
-            using (var p = new ProtectedPointer(this))
-            {
-                return GetArrayFast();
-            }
+            using var p = new ProtectedPointer(this);
+            return GetArrayFast();
         }
 
         /// <summary>

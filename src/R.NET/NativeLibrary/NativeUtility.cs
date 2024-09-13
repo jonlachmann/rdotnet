@@ -27,7 +27,7 @@ namespace RDotNet.NativeLibrary
         ///                         The registry.</param>
         public NativeUtility(IRegistry registry = null)
         {
-            Registry = (registry == null ? new WindowsRegistry() : registry);
+            Registry = registry ?? new WindowsRegistry();
         }
 
         /// <summary>
@@ -56,12 +56,12 @@ namespace RDotNet.NativeLibrary
             return PlatformUtility.ExecCommand(processName, arguments);
         }
 
-        private static StringBuilder logSetEnvVar = new StringBuilder();
+        private static readonly StringBuilder LogSetEnvVar = new StringBuilder();
 
         /// <summary>
         /// Gets a log of the changes made to environment variables via the NativeUtility
         /// </summary>
-        public static string SetEnvironmentVariablesLog { get { return logSetEnvVar.ToString(); } }
+        public static string SetEnvironmentVariablesLog => LogSetEnvVar.ToString();
 
         /// <summary>
         /// Gets the path to the folder containing R.dll that this instance found when setting environment variables
@@ -74,7 +74,7 @@ namespace RDotNet.NativeLibrary
         public string RHome { get; private set; }
 
         /// <summary>
-        /// Re-apply the changes to the PATH and R_HOME environment variables. This can be needed if there are site or 
+        /// Re-apply the changes to the PATH and R_HOME environment variables. This can be needed if there are site or
         /// user .Renviron files, as the native R library will override modifications done by R.NET over the course of the engine initialisation
         /// </summary>
         public void SetCachedEnvironmentVariables()
@@ -104,7 +104,7 @@ namespace RDotNet.NativeLibrary
              * to deduce the path to the binaries, in preference to the registry key.
              */
 
-            logSetEnvVar.Clear();
+            LogSetEnvVar.Clear();
 
             var platform = GetPlatform();
             if (rPath != null)
@@ -112,7 +112,7 @@ namespace RDotNet.NativeLibrary
             if (rHome != null)
                 CheckDirExists(rHome);
 
-            FindRPaths(ref rPath, ref rHome, logSetEnvVar);
+            FindRPaths(ref rPath, ref rHome, LogSetEnvVar);
 
             if (string.IsNullOrEmpty(rHome))
                 throw new NotSupportedException("R_HOME was not provided and a suitable path could not be found by R.NET");
@@ -122,8 +122,10 @@ namespace RDotNet.NativeLibrary
             if (platform == PlatformID.Win32NT)
                 rHome = GetShortPath(rHome);
             if (!Directory.Exists(rHome))
-                throw new DirectoryNotFoundException(string.Format("Directory '{0}' does not exist - cannot set the environment variable R_HOME to that value", rHome));
+                throw new DirectoryNotFoundException($"Directory '{rHome}' does not exist - cannot set the environment variable R_HOME to that value");
             Environment.SetEnvironmentVariable("R_HOME", rHome);
+            var res = setenv("R_HOME", rHome, 1);
+
             if (platform == PlatformID.Unix)
             {
                 // Let's check that LD_LIBRARY_PATH is set if this is a custom installation of R.
@@ -141,7 +143,7 @@ namespace RDotNet.NativeLibrary
         }
 
         /// <summary>
-        /// A method to help diagnose the environment variable setup process. 
+        /// A method to help diagnose the environment variable setup process.
         /// This function does not change the environment, this is purely a "dry run"
         /// </summary>
         /// <param name="rPath">The path of the directory containing the R native library.
@@ -221,7 +223,7 @@ namespace RDotNet.NativeLibrary
 
         private void doFoundWinRegKey(IRegistryKey rCore, StringBuilder logger)
         {
-            doLogSetEnvVarInfo(string.Format("Found Windows registry key {0}", rCore.ToString()), logger);
+            doLogSetEnvVarInfo($"Found Windows registry key {rCore}", logger);
         }
 
 
@@ -565,20 +567,13 @@ namespace RDotNet.NativeLibrary
         public static string GetRLibraryFileName()
         {
             var p = GetPlatform();
-            switch (p)
+            return p switch
             {
-                case PlatformID.Win32NT:
-                    return "R.dll";
-
-                case PlatformID.MacOSX:
-                    return "libR.dylib";
-
-                case PlatformID.Unix:
-                    return "libR.so";
-
-                default:
-                    throw new PlatformNotSupportedException();
-            }
+                PlatformID.Win32NT => "R.dll",
+                PlatformID.MacOSX => "libR.dylib",
+                PlatformID.Unix => "libR.so",
+                _ => throw new PlatformNotSupportedException()
+            };
         }
 
         /// <summary>
@@ -604,5 +599,10 @@ namespace RDotNet.NativeLibrary
                 return p == PlatformID.Win32NT;
             }
         }
+
+        // Import setenv from libc (part of standard C library)
+        [DllImport("libc", SetLastError = true)]
+        public static extern int setenv(string name, string value, int overwrite);
+
     }
 }

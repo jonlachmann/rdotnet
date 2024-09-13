@@ -15,7 +15,7 @@ namespace RDotNet.Dynamic
         /// <summary>
         /// A string array of length zero
         /// </summary>
-        protected static readonly string[] Empty = new string[0];
+        protected static readonly string[] Empty = Array.Empty<string>();
 
         /// <summary>
         /// Dynamic and binding logic for S expressions
@@ -36,11 +36,9 @@ namespace RDotNet.Dynamic
         /// <returns></returns>
         protected DynamicMetaObject BindGetMember<RType, BType>(GetMemberBinder binder, Type[] indexerNameType)
         {
-            ConstantExpression instance;
-            ConstantExpression name;
-            BuildInstanceAndName<RType>(binder, out instance, out name);
-            PropertyInfo indexer = typeof(RType).GetProperty("Item", indexerNameType);
-            IndexExpression call = System.Linq.Expressions.Expression.Property(instance, indexer, name);
+            BuildInstanceAndName<RType>(binder, out var instance, out var name);
+            var indexer = typeof(RType).GetProperty("Item", indexerNameType);
+            var call = System.Linq.Expressions.Expression.Property(instance, indexer, name);
             return CreateDynamicMetaObject<BType>(call);
         }
 
@@ -78,11 +76,9 @@ namespace RDotNet.Dynamic
                 return base.BindGetMember(binder);
             }
 
-            ConstantExpression instance;
-            ConstantExpression name;
-            BuildInstanceAndName<SymbolicExpression>(binder, out instance, out name);
-            MethodInfo getAttribute = typeof(SymbolicExpression).GetMethod("GetAttribute");
-            MethodCallExpression call = System.Linq.Expressions.Expression.Call(instance, getAttribute, name);
+            BuildInstanceAndName<SymbolicExpression>(binder, out var instance, out var name);
+            var getAttribute = typeof(SymbolicExpression).GetMethod("GetAttribute");
+            var call = System.Linq.Expressions.Expression.Call(instance, getAttribute, name);
             return CreateDynamicMetaObject<SymbolicExpression>(call);
         }
 

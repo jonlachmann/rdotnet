@@ -15,7 +15,7 @@ namespace RDotNet.Utilities
     /// </summary>
     public static class RTypesUtil
     {
-        /// <summary> Serialize an array of complex numbers to 
+        /// <summary> Serialize an array of complex numbers to
         ///           an array of doubles, alternating real and imaginary values</summary>
         ///
         /// <param name="values"> The complex values to serialize</param>
@@ -24,7 +24,7 @@ namespace RDotNet.Utilities
         public static double[] SerializeComplexToDouble(Complex[] values)
         {
             var data = new double[2 * values.Length];
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 data[2 * i] = values[i].Real;
                 data[2 * i + 1] = values[i].Imaginary;
@@ -34,7 +34,7 @@ namespace RDotNet.Utilities
 
         internal static Rcomplex SerializeComplexToRComplex(Complex value)
         {
-            var data = new Rcomplex() {r = value.Real, i = value.Imaginary};
+            var data = new Rcomplex {r = value.Real, i = value.Imaginary};
             return data;
         }
 
@@ -47,11 +47,11 @@ namespace RDotNet.Utilities
         /// <returns> A Complex[].</returns>
         public static Complex[] DeserializeComplexFromDouble(double[] data)
         {
-            int dblLen = data.Length;
+            var dblLen = data.Length;
             if (dblLen % 2 != 0) throw new ArgumentException("Serialised definition of complexes must be of even length");
-            int n = dblLen / 2;
+            var n = dblLen / 2;
             var res = new Complex[n];
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
                 res[i] = new Complex(data[2 * i], data[2 * i + 1]);
             return res;
         }

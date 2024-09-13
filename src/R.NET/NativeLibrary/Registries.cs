@@ -61,24 +61,12 @@ namespace RDotNet.NativeLibrary
         /// <summary> Gets the current user.</summary>
         ///
         /// <value> The current user.</value>
-        public IRegistryKey CurrentUser
-        {
-            get
-            {
-                return new WindowsRegistryKey(Microsoft.Win32.Registry.CurrentUser);
-            }
-        }
+        public IRegistryKey CurrentUser => new WindowsRegistryKey(Microsoft.Win32.Registry.CurrentUser);
 
         /// <summary> Gets the local machine.</summary>
         ///
         /// <value> The local machine.</value>
-        public IRegistryKey LocalMachine
-        {
-            get
-            {
-                return new WindowsRegistryKey(Microsoft.Win32.Registry.LocalMachine);
-            }
-        }
+        public IRegistryKey LocalMachine => new WindowsRegistryKey(Microsoft.Win32.Registry.LocalMachine);
     }
 
     /// <summary> The windows registry key.</summary>
@@ -97,9 +85,9 @@ namespace RDotNet.NativeLibrary
         /// Get the real key
         /// </summary>
         /// <returns>Object</returns>
-        public Object GetRealKey() 
-        { 
-                return realKey; 
+        public Object GetRealKey()
+        {
+                return realKey;
         }
 
         /// <summary> Gets sub key names.</summary>

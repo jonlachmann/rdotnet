@@ -15,33 +15,27 @@ namespace RDotNet.Diagnostics
 
         public S4ObjectSlotDisplay(S4Object obj, string name)
         {
-            this.s4obj = obj;
+            s4obj = obj;
             this.name = name;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public SymbolicExpression Value
-        {
-            get
-            {
-                return s4obj[name];
-            }
-        }
+        public SymbolicExpression Value => s4obj[name];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public string Display
         {
             get
             {
-                var slot = this.Value;
-                var names = this.s4obj.SlotNames;
+                var slot = Value;
+                var names = s4obj.SlotNames;
                 if (names == null || !names.Contains(name))
                 {
-                    return String.Format("NA ({0})", slot.Type);
+                    return $"NA ({slot.Type})";
                 }
                 else
                 {
-                    return String.Format("\"{0}\" ({1})", name, slot.Type);
+                    return $"\"{name}\" ({slot.Type})";
                 }
             }
         }

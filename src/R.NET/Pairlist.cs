@@ -23,10 +23,7 @@ namespace RDotNet
         /// <summary>
         /// Gets the number of nodes.
         /// </summary>
-        public int Count
-        {
-            get { return this.GetFunction<Rf_length>()(handle); }
-        }
+        public int Count => GetFunction<Rf_length>()(handle);
 
         #region IEnumerable<Symbol> Members
 

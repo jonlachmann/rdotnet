@@ -9,7 +9,7 @@ namespace RDotNet.Diagnostics
 
         public S4ObjectDebugView(S4Object obj)
         {
-            this.s4obj = obj;
+            s4obj = obj;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -17,8 +17,8 @@ namespace RDotNet.Diagnostics
         {
             get
             {
-                return this.s4obj.SlotNames.AsEnumerable()
-                   .Select(name => new S4ObjectSlotDisplay(this.s4obj, name))
+                return s4obj.SlotNames.AsEnumerable()
+                   .Select(name => new S4ObjectSlotDisplay(s4obj, name))
                    .ToArray();
             }
         }

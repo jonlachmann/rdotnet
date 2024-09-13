@@ -49,8 +49,8 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override bool GetValue(int index)
         {
-            int offset = GetOffset(index);
-            int data = Marshal.ReadInt32(DataPointer, offset);
+            var offset = GetOffset(index);
+            var data = Marshal.ReadInt32(DataPointer, offset);
             return Convert.ToBoolean(data);
         }
 
@@ -62,7 +62,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override bool GetValueAltRep(int index)
         {
-            var data = GetFunction<LOGICAL_ELT>()(this.DangerousGetHandle(), (IntPtr)index);
+            var data = GetFunction<LOGICAL_ELT>()(DangerousGetHandle(), index);
             return Convert.ToBoolean(data);
         }
 
@@ -74,8 +74,8 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValue(int index, bool value)
         {
-            int offset = GetOffset(index);
-            int data = Convert.ToInt32(value);
+            var offset = GetOffset(index);
+            var data = Convert.ToInt32(value);
             Marshal.WriteInt32(DataPointer, offset, data);
         }
 
@@ -87,8 +87,8 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValueAltRep(int index, bool value)
         {
-            int data = Convert.ToInt32(value);
-            GetFunction<SET_LOGICAL_ELT>()(this.DangerousGetHandle(), (IntPtr)index, data);
+            var data = Convert.ToInt32(value);
+            GetFunction<SET_LOGICAL_ELT>()(DangerousGetHandle(), index, data);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace RDotNet
         /// <returns>Array equivalent</returns>
         protected override bool[] GetArrayFast()
         {
-            int[] intValues = new int[this.Length];
+            var intValues = new int[Length];
             Marshal.Copy(DataPointer, intValues, 0, intValues.Length);
             return Array.ConvertAll(intValues, Convert.ToBoolean);
         }
@@ -114,13 +114,8 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of a Boolean value in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get
-            {
-                // Boolean is int internally.
-                return sizeof(int);
-            }
-        }
+        protected override int DataSize =>
+            // Boolean is int internally.
+            sizeof(int);
     }
 }

@@ -23,7 +23,7 @@ namespace RDotNet.Diagnostics
         {
             get
             {
-                var column = this.data[this.columnIndex];
+                var column = data[columnIndex];
                 return column.IsFactor() ? column.AsFactor().GetFactors() : column.ToArray();
             }
         }
@@ -33,16 +33,9 @@ namespace RDotNet.Diagnostics
         {
             get
             {
-                var column = this.data[this.columnIndex];
-                var names = this.data.ColumnNames;
-                if (names == null || names[this.columnIndex] == null)
-                {
-                    return String.Format("NA ({0})", column.Type);
-                }
-                else
-                {
-                    return String.Format("\"{0}\" ({1})", names[this.columnIndex], column.Type);
-                }
+                var column = data[columnIndex];
+                var names = data.ColumnNames;
+                return names?[columnIndex] == null ? $"NA ({column.Type})" : $"\"{names[columnIndex]}\" ({column.Type})";
             }
         }
     }

@@ -54,18 +54,18 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
                     var data = new byte[DataSize];
-                    IntPtr pointer = DataPointer;
-                    int offset = GetOffset(rowIndex, columnIndex);
-                    for (int byteIndex = 0; byteIndex < data.Length; byteIndex++)
+                    var pointer = DataPointer;
+                    var offset = GetOffset(rowIndex, columnIndex);
+                    for (var byteIndex = 0; byteIndex < data.Length; byteIndex++)
                     {
                         data[byteIndex] = Marshal.ReadByte(pointer, offset + byteIndex);
                     }
@@ -76,18 +76,18 @@ namespace RDotNet
             {
                 if (rowIndex < 0 || RowCount <= rowIndex)
                 {
-                    throw new ArgumentOutOfRangeException("rowIndex");
+                    throw new ArgumentOutOfRangeException(nameof(rowIndex));
                 }
                 if (columnIndex < 0 || ColumnCount <= columnIndex)
                 {
-                    throw new ArgumentOutOfRangeException("columnIndex");
+                    throw new ArgumentOutOfRangeException(nameof(columnIndex));
                 }
                 using (new ProtectedPointer(this))
                 {
-                    byte[] data = BitConverter.GetBytes(value);
-                    IntPtr pointer = DataPointer;
-                    int offset = GetOffset(rowIndex, columnIndex);
-                    for (int byteIndex = 0; byteIndex < data.Length; byteIndex++)
+                    var data = BitConverter.GetBytes(value);
+                    var pointer = DataPointer;
+                    var offset = GetOffset(rowIndex, columnIndex);
+                    for (var byteIndex = 0; byteIndex < data.Length; byteIndex++)
                     {
                         Marshal.WriteByte(pointer, offset + byteIndex, data[byteIndex]);
                     }
@@ -119,9 +119,6 @@ namespace RDotNet
         /// <summary>
         /// Gets the size of a real number in byte.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return sizeof(double); }
-        }
+        protected override int DataSize => sizeof(double);
     }
 }

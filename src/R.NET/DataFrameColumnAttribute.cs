@@ -8,17 +8,14 @@ namespace RDotNet
     [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
     public class DataFrameColumnAttribute : Attribute
     {
-        private static readonly string[] Empty = new string[0];
+        private static readonly string[] Empty = Array.Empty<string>();
 
         private readonly int index;
 
         /// <summary>
         /// Gets the index.
         /// </summary>
-        public int Index
-        {
-            get { return this.index; }
-        }
+        public int Index => index;
 
         private string name;
 
@@ -27,14 +24,14 @@ namespace RDotNet
         /// </summary>
         public string Name
         {
-            get { return this.name; }
+            get { return name; }
             set
             {
-                if (this.index < 0 && value == null)
+                if (index < 0 && value == null)
                 {
                     throw new ArgumentNullException("value", "Name must not be null when Index is not defined.");
                 }
-                this.name = value;
+                name = value;
             }
         }
 
@@ -44,12 +41,9 @@ namespace RDotNet
         /// <param name="name">The name.</param>
         public DataFrameColumnAttribute(string name)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
+            ArgumentNullException.ThrowIfNull(name);
             this.name = name;
-            this.index = -1;
+            index = -1;
         }
 
         /// <summary>
@@ -58,11 +52,8 @@ namespace RDotNet
         /// <param name="index">The index.</param>
         public DataFrameColumnAttribute(int index)
         {
-            if (index < 0)
-            {
-                throw new ArgumentOutOfRangeException("index");
-            }
-            this.name = null;
+            ArgumentOutOfRangeException.ThrowIfNegative(index);
+            name = null;
             this.index = index;
         }
 

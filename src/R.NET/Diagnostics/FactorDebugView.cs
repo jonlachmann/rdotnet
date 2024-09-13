@@ -13,12 +13,6 @@ namespace RDotNet.Diagnostics
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public string[] Value
-        {
-            get
-            {
-                return this.factor.GetFactors().ToArray();
-            }
-        }
+        public string[] Value => factor.GetFactors().ToArray();
     }
 }

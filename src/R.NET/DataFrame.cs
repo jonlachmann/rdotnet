@@ -66,22 +66,22 @@ namespace RDotNet
         /// <returns></returns>
         protected override DynamicVector[] GetArrayFast()
         {
-            var res = new DynamicVector[this.Length];
-            for (int i = 0; i < res.Length; i++)
+            var res = new DynamicVector[Length];
+            for (var i = 0; i < res.Length; i++)
                 res[i] = GetColumn(i);
             return res;
         }
 
         private DynamicVector GetColumn(int columnIndex)
         {
-            int offset = GetOffset(columnIndex);
-            IntPtr pointer = Marshal.ReadIntPtr(DataPointer, offset);
+            var offset = GetOffset(columnIndex);
+            var pointer = Marshal.ReadIntPtr(DataPointer, offset);
             return new DynamicVector(Engine, pointer);
         }
 
         private void SetColumn(int columnIndex, DynamicVector value)
         {
-            int offset = GetOffset(columnIndex);
+            var offset = GetOffset(columnIndex);
             Marshal.WriteIntPtr(DataPointer, offset, (value ?? Engine.NilValue).DangerousGetHandle());
         }
 
@@ -90,7 +90,7 @@ namespace RDotNet
         /// </summary>
         protected override void SetVectorDirect(DynamicVector[] values)
         {
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
                 SetColumn(i, values[i]);
         }
 
@@ -104,12 +104,12 @@ namespace RDotNet
         {
             get
             {
-                DynamicVector column = this[columnIndex];
+                var column = this[columnIndex];
                 return column[rowIndex];
             }
             set
             {
-                DynamicVector column = this[columnIndex];
+                var column = this[columnIndex];
                 column[rowIndex] = value;
             }
         }
@@ -124,12 +124,12 @@ namespace RDotNet
         {
             get
             {
-                DynamicVector column = this[columnName];
+                var column = this[columnName];
                 return column[rowIndex];
             }
             set
             {
-                DynamicVector column = this[columnName];
+                var column = this[columnName];
                 column[rowIndex] = value;
             }
         }
@@ -144,12 +144,12 @@ namespace RDotNet
         {
             get
             {
-                DynamicVector column = this[columnName];
+                var column = this[columnName];
                 return column[rowName];
             }
             set
             {
-                DynamicVector column = this[columnName];
+                var column = this[columnName];
                 column[rowName] = value;
             }
         }
@@ -157,18 +157,12 @@ namespace RDotNet
         /// <summary>
         /// Gets the number of data sets.
         /// </summary>
-        public int RowCount
-        {
-            get { return ColumnCount == 0 ? 0 : this[0].Length; }
-        }
+        public int RowCount => ColumnCount == 0 ? 0 : this[0].Length;
 
         /// <summary>
         /// Gets the number of kinds of data.
         /// </summary>
-        public int ColumnCount
-        {
-            get { return Length; }
-        }
+        public int ColumnCount => Length;
 
         /// <summary>
         /// Gets the names of rows.
@@ -177,19 +171,15 @@ namespace RDotNet
         {
             get
             {
-                SymbolicExpression rowNamesSymbol = Engine.GetPredefinedSymbol(RRowNamesSymbolName);
-                SymbolicExpression rowNames = GetAttribute(rowNamesSymbol);
-                if (rowNames == null)
-                {
-                    return null;
-                }
-                CharacterVector rowNamesVector = rowNames.AsCharacter();
+                var rowNamesSymbol = Engine.GetPredefinedSymbol(RRowNamesSymbolName);
+                var rowNames = GetAttribute(rowNamesSymbol);
+                var rowNamesVector = rowNames?.AsCharacter();
                 if (rowNamesVector == null)
                 {
                     return null;
                 }
 
-                int length = rowNamesVector.Length;
+                var length = rowNamesVector.Length;
                 var result = new string[length];
                 rowNamesVector.CopyTo(result, length);
                 return result;
@@ -199,18 +189,12 @@ namespace RDotNet
         /// <summary>
         /// Gets the names of columns.
         /// </summary>
-        public string[] ColumnNames
-        {
-            get { return Names; }
-        }
+        public string[] ColumnNames => Names;
 
         /// <summary>
         /// Gets the data size of each element in this vector, i.e. the offset in memory between elements.
         /// </summary>
-        protected override int DataSize
-        {
-            get { return Marshal.SizeOf(typeof(IntPtr)); }
-        }
+        protected override int DataSize => Marshal.SizeOf(typeof(IntPtr));
 
         /// <summary>
         /// Gets the row at the specified index.
@@ -246,8 +230,8 @@ namespace RDotNet
         /// <returns>The collection of the rows.</returns>
         public IEnumerable<DataFrameRow> GetRows()
         {
-            int rowCount = RowCount;
-            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+            var rowCount = RowCount;
+            for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
             {
                 yield return GetRow(rowIndex);
             }
@@ -267,8 +251,8 @@ namespace RDotNet
             {
                 throw new ArgumentException("DataFrameRowAttribute is required.");
             }
-            int rowCount = RowCount;
-            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+            var rowCount = RowCount;
+            for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
             {
                 var row = GetRow(rowIndex);
                 yield return attribute.Convert<TRow>(row);

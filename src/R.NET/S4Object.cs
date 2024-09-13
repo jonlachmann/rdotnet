@@ -23,7 +23,7 @@ namespace RDotNet
         /// slotNames, when used on the class representation object, returns the slot names of
         /// instances of the class, rather than the slot names of the class object itself. '.slotNames' is what we want.
         /// </remarks>
-        private static Function dotSlotNamesFunc = null;
+        private static Function _dotSlotNamesFunc;
 
         /// <summary>
         /// Create a new S4 object
@@ -33,8 +33,7 @@ namespace RDotNet
         protected internal S4Object(REngine engine, IntPtr pointer)
             : base(engine, pointer)
         {
-            if (dotSlotNamesFunc == null)
-                dotSlotNamesFunc = Engine.Evaluate("invisible(.slotNames)").AsFunction();
+            _dotSlotNamesFunc ??= Engine.Evaluate("invisible(.slotNames)").AsFunction();
         }
 
         /// <summary>
@@ -46,31 +45,29 @@ namespace RDotNet
         {
             get
             {
-                checkSlotName(name);
+                CheckSlotName(name);
                 IntPtr slotValue;
                 using (var s = new ProtectedPointer(Engine, GetFunction<Rf_mkString>()(InternalString.NativeUtf8FromString(name))))
                 {
-                    slotValue = this.GetFunction<R_do_slot>()(this.DangerousGetHandle(), s);
+                    slotValue = GetFunction<R_do_slot>()(DangerousGetHandle(), s);
                 }
                 return new SymbolicExpression(Engine, slotValue);
             }
             set
             {
-                checkSlotName(name);
-                using (var s = new ProtectedPointer(Engine, GetFunction<Rf_mkString>()(InternalString.NativeUtf8FromString(name))))
+                CheckSlotName(name);
+                using var s = new ProtectedPointer(Engine, GetFunction<Rf_mkString>()(InternalString.NativeUtf8FromString(name)));
+                using (new ProtectedPointer(this))
                 {
-                    using (new ProtectedPointer(this))
-                    {
-                        this.GetFunction<R_do_slot_assign>()(this.DangerousGetHandle(), s, value.DangerousGetHandle());
-                    }
+                    GetFunction<R_do_slot_assign>()(DangerousGetHandle(), s, value.DangerousGetHandle());
                 }
             }
         }
 
-        private void checkSlotName(string name)
+        private void CheckSlotName(string name)
         {
             if (!SlotNames.Contains(name))
-                throw new ArgumentException(string.Format("Invalid slot name '{0}'", name), "name");
+                throw new ArgumentException($"Invalid slot name '{name}'", nameof(name));
         }
 
         /// <summary>
@@ -80,13 +77,11 @@ namespace RDotNet
         /// <returns>whether a slot name is present in the object</returns>
         public bool HasSlot(string slotName)
         {
-            using (var s = new ProtectedPointer(Engine, GetFunction<Rf_mkString>()(InternalString.NativeUtf8FromString(slotName))))
-            {
-                return this.GetFunction<R_has_slot>()(this.DangerousGetHandle(), s);
-            }
+            using var s = new ProtectedPointer(Engine, GetFunction<Rf_mkString>()(InternalString.NativeUtf8FromString(slotName)));
+            return GetFunction<R_has_slot>()(DangerousGetHandle(), s);
         }
 
-        private string[] slotNames = null;
+        private string[] _slotNames;
 
         /// <summary>
         /// Gets the slot names for this object. The values are cached once retrieved the first time.
@@ -96,19 +91,15 @@ namespace RDotNet
         {
             get
             {
-                if (slotNames == null)
-                    slotNames = dotSlotNamesFunc.Invoke(this).AsCharacter().ToArray();
-                return (string[])slotNames.Clone();
+                _slotNames ??= _dotSlotNamesFunc.Invoke(this).AsCharacter().ToArray();
+                return (string[])_slotNames.Clone();
             }
         }
 
         /// <summary>
         /// Gets the number of slot names
         /// </summary>
-        public int SlotCount
-        {
-            get { return SlotNames.Length; }
-        }
+        public int SlotCount => SlotNames.Length;
 
         /// <summary>
         /// Gets the class representation.

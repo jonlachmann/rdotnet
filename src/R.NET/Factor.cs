@@ -40,7 +40,7 @@ namespace RDotNet
         public string[] GetFactors()
         {
             var levels = GetLevels();
-            var levelIndices = this.GetArrayFast();
+            var levelIndices = GetArrayFast();
             return Array.ConvertAll(levelIndices, value => (value == NACode ? null : levels[value - 1]));
         }
 
@@ -79,7 +79,7 @@ namespace RDotNet
         public TEnum[] GetFactors<TEnum>(bool ignoreCase = false)
            where TEnum : struct
         {
-            Type enumType = typeof(TEnum);
+            var enumType = typeof(TEnum);
             if (!enumType.IsEnum)
             {
                 throw new ArgumentException("Only enum type is supported");
@@ -99,13 +99,7 @@ namespace RDotNet
         /// <summary>
         /// Gets the value which indicating the factor is ordered or not.
         /// </summary>
-        public bool IsOrdered
-        {
-            get
-            {
-                return this.GetFunction<Rf_isOrdered>()(this.handle);
-            }
-        }
+        public bool IsOrdered => GetFunction<Rf_isOrdered>()(handle);
 
         /// <summary>
         /// Gets the value of the vector of factors at an index
@@ -115,10 +109,7 @@ namespace RDotNet
         public string GetFactor(int index)
         {
             var intValue = this[index];
-            if (intValue <= 0)
-                return null;
-            else
-                return this.GetLevels()[intValue - 1]; // zero-based index in C#, but 1-based in R
+            return intValue <= 0 ? null : GetLevels()[intValue - 1]; // zero-based index in C#, but 1-based in R
         }
 
         /// <summary>
@@ -132,8 +123,8 @@ namespace RDotNet
                 this[index] = NACode;
             else
             {
-                var levels = this.GetLevels();
-                int factIndex = Array.IndexOf(levels, factorValue);
+                var levels = GetLevels();
+                var factIndex = Array.IndexOf(levels, factorValue);
                 if (factIndex >= 0)
                     this[index] = factIndex + 1; // zero-based index in C#, but 1-based in R
                 else

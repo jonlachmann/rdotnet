@@ -4,11 +4,11 @@ namespace RDotNet.Diagnostics
 {
     internal class MatrixDebugView<T>
     {
-        private readonly Matrix<T> matrix;
+        private readonly Matrix<T> _matrix;
 
         public MatrixDebugView(Matrix<T> matrix)
         {
-            this.matrix = matrix;
+            _matrix = matrix;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -16,8 +16,8 @@ namespace RDotNet.Diagnostics
         {
             get
             {
-                var array = new T[this.matrix.RowCount, this.matrix.ColumnCount];
-                this.matrix.CopyTo(array, this.matrix.RowCount, this.matrix.ColumnCount);
+                var array = new T[_matrix.RowCount, _matrix.ColumnCount];
+                _matrix.CopyTo(array, _matrix.RowCount, _matrix.ColumnCount);
                 return array;
             }
         }

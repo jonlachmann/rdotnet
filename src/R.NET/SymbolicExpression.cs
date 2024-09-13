@@ -39,7 +39,7 @@ namespace RDotNet
         {
             this.engine = engine;
             var sexprecType = engine.GetSEXPRECType();
-            this.sexp = Convert.ChangeType(Marshal.PtrToStructure(pointer,  sexprecType), sexprecType);
+            sexp = Convert.ChangeType(Marshal.PtrToStructure(pointer,  sexprecType), sexprecType);
             SetHandle(pointer);
             Preserve();
         }
@@ -47,18 +47,12 @@ namespace RDotNet
         /// <summary>
         /// Is the handle of this SEXP invalid (zero, i.e. null pointer)
         /// </summary>
-        public override bool IsInvalid
-        {
-            get { return handle == IntPtr.Zero; }
-        }
+        public override bool IsInvalid => handle == IntPtr.Zero;
 
         /// <summary>
         /// Gets the <see cref="REngine"/> to which this expression belongs.
         /// </summary>
-        public REngine Engine
-        {
-            get { return this.engine; }
-        }
+        public REngine Engine => engine;
 
         /// <summary>
         /// Creates the delegate function for the specified function defined in the DLL.
@@ -73,18 +67,12 @@ namespace RDotNet
         /// <summary>
         /// Gets whether this expression is protected from the garbage collection.
         /// </summary>
-        public bool IsProtected
-        {
-            get { return this.isProtected; }
-        }
+        public bool IsProtected => isProtected;
 
         /// <summary>
         /// Gets the <see cref="SymbolicExpressionType"/>.
         /// </summary>
-        public SymbolicExpressionType Type
-        {
-            get { return this.sexp.sxpinfo.type; }
-        }
+        public SymbolicExpressionType Type => sexp.sxpinfo.type;
 
         #region IDynamicMetaObjectProvider Members
 
@@ -126,11 +114,11 @@ namespace RDotNet
         /// <returns>The names of attributes</returns>
         public string[] GetAttributeNames()
         {
-            int length = this.GetFunction<Rf_length>()(this.sexp.attrib);
+            int length = GetFunction<Rf_length>()(sexp.attrib);
             var names = new string[length];
-            IntPtr pointer = this.sexp.attrib;
+            IntPtr pointer = sexp.attrib;
             var sexprecType = engine.GetSEXPRECType();
-            for (int index = 0; index < length; index++)
+            for (var index = 0; index < length; index++)
             {
                 dynamic node = Convert.ChangeType(Marshal.PtrToStructure(pointer, sexprecType), sexprecType);
                 var attribute = Convert.ChangeType(Marshal.PtrToStructure(node.listsxp.tagval, sexprecType), sexprecType);
@@ -148,41 +136,27 @@ namespace RDotNet
         /// <returns>The attribute.</returns>
         public SymbolicExpression GetAttribute(string attributeName)
         {
-            if (attributeName == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(attributeName);
             if (attributeName == string.Empty)
             {
                 throw new ArgumentException();
             }
 
-            IntPtr installedName = this.GetFunction<Rf_install>()(attributeName);
-            IntPtr attribute = this.GetFunction<Rf_getAttrib>()(handle, installedName);
-            if (Engine.EqualsRNilValue(attribute))
-            {
-                return null;
-            }
-            return new SymbolicExpression(Engine, attribute);
+            var installedName = GetFunction<Rf_install>()(attributeName);
+            var attribute = GetFunction<Rf_getAttrib>()(handle, installedName);
+            return Engine.EqualsRNilValue(attribute) ? null : new SymbolicExpression(Engine, attribute);
         }
 
         internal SymbolicExpression GetAttribute(SymbolicExpression symbol)
         {
-            if (symbol == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(symbol);
             if (symbol.Type != SymbolicExpressionType.Symbol)
             {
                 throw new ArgumentException();
             }
 
-            IntPtr attribute = this.GetFunction<Rf_getAttrib>()(handle, symbol.handle);
-            if (Engine.EqualsRNilValue(attribute))
-            {
-                return null;
-            }
-            return new SymbolicExpression(Engine, attribute);
+            var attribute = GetFunction<Rf_getAttrib>()(handle, symbol.handle);
+            return Engine.EqualsRNilValue(attribute) ? null : new SymbolicExpression(Engine, attribute);
         }
 
         /// <summary>
@@ -192,41 +166,29 @@ namespace RDotNet
         /// <param name="value">The value</param>
         public void SetAttribute(string attributeName, SymbolicExpression value)
         {
-            if (attributeName == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(attributeName);
             if (attributeName == string.Empty)
             {
                 throw new ArgumentException();
             }
 
-            if (value == null)
-            {
-                value = Engine.NilValue;
-            }
+            value ??= Engine.NilValue;
 
-            IntPtr installedName = this.GetFunction<Rf_install>()(attributeName);
-            this.GetFunction<Rf_setAttrib>()(handle, installedName, value.handle);
+            var installedName = GetFunction<Rf_install>()(attributeName);
+            GetFunction<Rf_setAttrib>()(handle, installedName, value.handle);
         }
 
         internal void SetAttribute(SymbolicExpression symbol, SymbolicExpression value)
         {
-            if (symbol == null)
-            {
-                throw new ArgumentNullException();
-            }
+            ArgumentNullException.ThrowIfNull(symbol);
             if (symbol.Type != SymbolicExpressionType.Symbol)
             {
                 throw new ArgumentException();
             }
 
-            if (value == null)
-            {
-                value = Engine.NilValue;
-            }
+            value ??= Engine.NilValue;
 
-            this.GetFunction<Rf_setAttrib>()(handle, symbol.handle, value.handle);
+            GetFunction<Rf_setAttrib>()(handle, symbol.handle, value.handle);
         }
 
         /// <summary>
@@ -235,16 +197,14 @@ namespace RDotNet
         /// <seealso cref="Unpreserve"/>
         public void Preserve()
         {
-            if (!IsInvalid && !isProtected)
+            if (IsInvalid || isProtected) return;
+            if (Engine.EnableLock)
             {
-                if (Engine.EnableLock)
-                {
-                    lock (lockObject) { this.GetFunction<R_PreserveObject>()(handle); }
-                }
-                else
-                    this.GetFunction<R_PreserveObject>()(handle);
-                this.isProtected = true;
+                lock (lockObject) { GetFunction<R_PreserveObject>()(handle); }
             }
+            else
+                GetFunction<R_PreserveObject>()(handle);
+            isProtected = true;
         }
 
         /// <summary>
@@ -253,16 +213,14 @@ namespace RDotNet
         /// <seealso cref="Preserve"/>
         public void Unpreserve()
         {
-            if (!IsInvalid && IsProtected)
+            if (IsInvalid || !IsProtected) return;
+            if (Engine.EnableLock)
             {
-                if (Engine.EnableLock)
-                {
-                    lock (lockObject) { this.GetFunction<R_ReleaseObject>()(handle); ; }
-                }
-                else
-                    this.GetFunction<R_ReleaseObject>()(handle);
-                this.isProtected = false;
+                lock (lockObject) { GetFunction<R_ReleaseObject>()(handle); ; }
             }
+            else
+                GetFunction<R_ReleaseObject>()(handle);
+            isProtected = false;
         }
 
         /// <summary>

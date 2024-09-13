@@ -8,7 +8,7 @@ namespace RDotNet
         public void TestCharacter()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var matrix = engine.Evaluate("x <- matrix(c(1, NA, 2, 3, NA, 4), nrow=3, ncol=2, byrow=TRUE)").AsCharacterMatrix();
             Assert.Equal(3, matrix.RowCount);
             Assert.Equal(2, matrix.ColumnCount);

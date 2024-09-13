@@ -32,12 +32,12 @@ namespace RDotNet
         {
             get
             {
-                DynamicVector column = DataFrame[index];
+                var column = DataFrame[index];
                 return column[RowIndex];
             }
             set
             {
-                DynamicVector column = DataFrame[index];
+                var column = DataFrame[index];
                 column[RowIndex] = value;
             }
         }
@@ -49,11 +49,8 @@ namespace RDotNet
         /// <returns></returns>
         internal object GetInnerValue(int index)
         {
-            DynamicVector column = DataFrame[index];
-            if (column.IsFactor())
-                return column.AsInteger()[RowIndex];
-            else
-                return column[RowIndex];
+            var column = DataFrame[index];
+            return column.IsFactor() ? column.AsInteger()[RowIndex] : column[RowIndex];
         }
 
         /// <summary>
@@ -63,7 +60,7 @@ namespace RDotNet
         /// <param name="value"></param>
         internal void SetInnerValue(int index, object value)
         {
-            DynamicVector column = DataFrame[index];
+            var column = DataFrame[index];
             if (column.IsFactor())
                 column.AsInteger()[RowIndex] = (int)value;
             else
@@ -79,12 +76,12 @@ namespace RDotNet
         {
             get
             {
-                DynamicVector column = DataFrame[name];
+                var column = DataFrame[name];
                 return column[RowIndex];
             }
             set
             {
-                DynamicVector column = DataFrame[name];
+                var column = DataFrame[name];
                 column[RowIndex] = value;
             }
         }
@@ -92,18 +89,12 @@ namespace RDotNet
         /// <summary>
         /// Gets the data frame containing this row.
         /// </summary>
-        public DataFrame DataFrame
-        {
-            get { return this.frame; }
-        }
+        public DataFrame DataFrame => frame;
 
         /// <summary>
         /// Gets the index of this row.
         /// </summary>
-        public int RowIndex
-        {
-            get { return this.rowIndex; }
-        }
+        public int RowIndex => rowIndex;
 
         /// <summary>
         /// Gets the column names of the data frame.
@@ -122,7 +113,7 @@ namespace RDotNet
         /// <returns>false if setting failed</returns>
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            string[] columnNames = DataFrame.ColumnNames;
+            var columnNames = DataFrame.ColumnNames;
             if (columnNames == null || Array.IndexOf(columnNames, binder.Name) < 0)
             {
                 result = null;
@@ -140,7 +131,7 @@ namespace RDotNet
         /// <returns>false if setting failed</returns>
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            string[] columnNames = DataFrame.ColumnNames;
+            var columnNames = DataFrame.ColumnNames;
             if (columnNames == null || Array.IndexOf(columnNames, binder.Name) < 0)
             {
                 return false;

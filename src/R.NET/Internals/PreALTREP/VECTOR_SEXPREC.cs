@@ -13,52 +13,16 @@ namespace RDotNet.Internals.PreALTREP
         private SEXPREC_HEADER header;
         private vecsxp vecsxp;
 
-        public sxpinfo sxpinfo
-        {
-            get
-            {
-                return header.sxpinfo;
-            }
-        }
+        public sxpinfo sxpinfo => header.sxpinfo;
 
-        public IntPtr attrib
-        {
-            get
-            {
-                return header.attrib;
-            }
-        }
+        public IntPtr attrib => header.attrib;
 
-        public IntPtr gengc_next_node
-        {
-            get
-            {
-                return header.gengc_next_node;
-            }
-        }
+        public IntPtr gengc_next_node => header.gengc_next_node;
 
-        public IntPtr gengc_prev_node
-        {
-            get
-            {
-                return header.gengc_prev_node;
-            }
-        }
+        public IntPtr gengc_prev_node => header.gengc_prev_node;
 
-        public long Length
-        {
-            get
-            {
-                return vecsxp.length;
-            }
-        }
+        public long Length => vecsxp.length;
 
-        public long TrueLength
-        {
-            get
-            {
-                return vecsxp.truelength;
-            }
-        }
+        public long TrueLength => vecsxp.truelength;
     }
 }
