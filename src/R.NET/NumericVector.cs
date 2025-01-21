@@ -1,6 +1,7 @@
 using RDotNet.Internals;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace RDotNet
@@ -34,12 +35,34 @@ namespace RDotNet
         /// Creates a new NumericVector with the specified values.
         /// </summary>
         /// <param name="engine">The <see cref="REngine"/> handling this instance.</param>
+        /// <param name="vector">The values, nullable.</param>
+        /// <seealso cref="REngineExtension.CreateNumericVector(REngine, IEnumerable{double})"/>
+        public NumericVector(REngine engine, IEnumerable<double?> vector)
+            : base(engine, SymbolicExpressionType.NumericVector, vector.Select(x => x ?? double.NaN))
+        { }
+
+        /// <summary>
+        /// Creates a new NumericVector with the specified values.
+        /// </summary>
+        /// <param name="engine">The <see cref="REngine"/> handling this instance.</param>
         /// <param name="vector">The values.</param>
         /// <seealso cref="REngineExtension.CreateNumericVector(REngine, IEnumerable{double})"/>
         public NumericVector(REngine engine, double[] vector)
             : base(engine, SymbolicExpressionType.NumericVector, vector.Length)
         {
             Marshal.Copy(vector, 0, DataPointer, vector.Length);
+        }
+
+        /// <summary>
+        /// Creates a new NumericVector with the specified values.
+        /// </summary>
+        /// <param name="engine">The <see cref="REngine"/> handling this instance.</param>
+        /// <param name="vector">The values, nullable.</param>
+        /// <seealso cref="REngineExtension.CreateNumericVector(REngine, IEnumerable{double})"/>
+        public NumericVector(REngine engine, double?[] vector)
+            : base(engine, SymbolicExpressionType.NumericVector, vector.Length)
+        {
+            Marshal.Copy(vector.Select(x => x ?? double.NaN).ToArray(), 0, DataPointer, vector.Length);
         }
 
         /// <summary>

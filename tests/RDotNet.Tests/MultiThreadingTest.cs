@@ -17,9 +17,9 @@ namespace RDotNet
 
             var engine = Engine;
             var r = new RuntimeDiagnostics(engine);
-            int sizeEach = 20;
-            int n = 100;
-            int nThreads = 10;
+            const int sizeEach = 20;
+            const int n = 100;
+            const int nThreads = 10;
             // with concurrent:true, very likely to bomb.
             doMultiThreadingOperation(r, sizeEach, n, nThreads, concurrent: false);
         }
@@ -30,7 +30,7 @@ namespace RDotNet
             Parallel.For(0, numOps, i => CreateVector(r, sizeEach, n, pVecs, i, !concurrent));
         }
 
-        private static Object lockedObj = new Object();
+        private static Object lockedObj = new();
 
         private static void CreateVector(RuntimeDiagnostics r, int sizeEach, int n, NumericVector[][] pVecs, int i, bool doLock)
         {

@@ -2,6 +2,7 @@ using System.Linq;
 using Xunit;
 using System;
 using System.Numerics;
+using Xunit.Abstractions;
 
 namespace RDotNet
 {
@@ -10,6 +11,13 @@ namespace RDotNet
     /// </summary>
     public class DataConversionTest : RDotNetTestFixture
     {
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public DataConversionTest(ITestOutputHelper testOutputHelper)
+        {
+            this.testOutputHelper = testOutputHelper;
+        }
+
         [Fact]
         public void TestCreateNumericVectorValid()
         {
@@ -26,7 +34,7 @@ namespace RDotNet
             // Test a large data set: I just cannot believe how faster things are...
             engine.Evaluate("x <- 1:1e7 * 1.1");
             var a = engine.GetSymbol("x").AsNumeric().ToArray();
-            Assert.Equal(a[10000000 / 2 - 1], 1.1 * 1e7 / 2);
+            Assert.Equal(1.1 * 1e7 / 2, a[10000000 / 2 - 1]);
         }
 
         [Fact]
@@ -41,7 +49,7 @@ namespace RDotNet
             var vec = engine.GetSymbol("x").AsInteger();
             if (vec.ToArray()[0] == 0)
             {
-                Console.WriteLine("FAIL");
+                testOutputHelper.WriteLine("FAIL");
             }
             CheckBothArrayConversions(vec, expected);
 
@@ -50,7 +58,7 @@ namespace RDotNet
             vec = engine.GetSymbol("x").AsInteger();
             if (vec.ToArray()[0] == 0)
             {
-                Console.WriteLine("FAIL");
+                testOutputHelper.WriteLine("FAIL");
             }
             CheckBothArrayConversions(vec, expected);
         }
@@ -192,8 +200,8 @@ namespace RDotNet
             SetUpTest();
             var engine = Engine;
             engine.Evaluate("x <- matrix(rep(c(TRUE,FALSE), 55), nrow=10, ncol=11)");
-            var exp_one = Array.ConvertAll(GenArrayInteger(1, 110), val => val % 2 == 1);
-            var expected = ToMatrix(exp_one, 10, 11);
+            var expOne = Array.ConvertAll(GenArrayInteger(1, 110), val => val % 2 == 1);
+            var expected = ToMatrix(expOne, 10, 11);
             var a = engine.GetSymbol("x").AsLogicalMatrix().ToArray();
             CheckArrayEqual(a, expected);
         }
@@ -204,8 +212,8 @@ namespace RDotNet
             SetUpTest();
             var engine = Engine;
             engine.Evaluate("x <- matrix((1:110 + 1i*(101:210)), nrow=10, ncol=11)");
-            var exp_one = Array.ConvertAll(GenArrayInteger(1, 110), val => new Complex(val, val + 100));
-            var expected = ToMatrix(exp_one, 10, 11);
+            var expOne = Array.ConvertAll(GenArrayInteger(1, 110), val => new Complex(val, val + 100));
+            var expected = ToMatrix(expOne, 10, 11);
             var a = engine.GetSymbol("x").AsComplexMatrix().ToArray();
             CheckArrayEqual(a, expected);
         }
@@ -218,7 +226,7 @@ namespace RDotNet
             SetUpTest();
             var engine = Engine;
             const string prefix = "VarTemp_";
-            engine.Evaluate(string.Format("VarTemp<-paste(sep='', '{0}',sample(1:10000000, 1, replace=F))", prefix));
+            engine.Evaluate($"VarTemp<-paste(sep='', '{prefix}',sample(1:10000000, 1, replace=F))");
             var result = engine.Evaluate("VarTemp").AsCharacter().First();
 
             // We're testing with a randomly generated string - we don't really care what comes out, it just

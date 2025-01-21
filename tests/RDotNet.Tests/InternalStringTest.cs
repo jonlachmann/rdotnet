@@ -10,10 +10,10 @@ namespace RDotNet
             SetUpTest();
             var engine = Engine;
             var vector = engine.Evaluate("c('foo', NA, 'bar')").AsCharacter();
-            Assert.Equal(vector.Length, (3));
-            Assert.Equal(vector[0], ("foo"));
+            Assert.Equal(3, vector.Length);
+            Assert.Equal("foo", vector[0]);
             Assert.Null(vector[1]);
-            Assert.Equal(vector[2], ("bar"));
+            Assert.Equal("bar", vector[2]);
         }
     }
 }
