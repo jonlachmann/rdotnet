@@ -15,12 +15,12 @@ namespace RDotNet.Graphics
 
         public DeviceDescription Description
         {
-            get { return this.description; }
+            get { return description; }
         }
 
         public GraphicsContext Context
         {
-            get { return this.context; }
+            get { return context; }
         }
     }
 }

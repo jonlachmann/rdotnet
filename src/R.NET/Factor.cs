@@ -3,7 +3,6 @@ using RDotNet.Internals;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
@@ -12,7 +11,7 @@ namespace RDotNet
     /// </summary>
     [DebuggerDisplay("Length = {Length}; Ordered = {IsOrdered}; RObjectType = {Type}")]
     [DebuggerTypeProxy(typeof(FactorDebugView))]
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+
     public class Factor : IntegerVector
     {
         /// <summary>
@@ -41,7 +40,7 @@ namespace RDotNet
         {
             var levels = GetLevels();
             var levelIndices = GetArrayFast();
-            return Array.ConvertAll(levelIndices, value => (value == NACode ? null : levels[value - 1]));
+            return Array.ConvertAll(levelIndices, value => value == NACode ? null : levels[value - 1]);
         }
 
         /// <summary>

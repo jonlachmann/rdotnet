@@ -4,14 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A generic list. This is also known as list in R.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class GenericVector : Vector<SymbolicExpression>
     {
         /// <summary>

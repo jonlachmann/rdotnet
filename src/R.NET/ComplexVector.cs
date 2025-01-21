@@ -4,14 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A collection of complex numbers.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class ComplexVector : Vector<Complex>
     {
         /// <summary>
@@ -102,7 +101,7 @@ namespace RDotNet
         /// <returns></returns>
         protected override Complex[] GetArrayFast()
         {
-            var n = this.Length;
+            var n = Length;
             var data = new double[2 * n];
             Marshal.Copy(DataPointer, data, 0, 2 * n);
             return RTypesUtil.DeserializeComplexFromDouble(data);

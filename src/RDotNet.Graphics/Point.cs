@@ -15,14 +15,14 @@ namespace RDotNet.Graphics
 
         public double X
         {
-            get { return this.x; }
-            set { this.x = value; }
+            get { return x; }
+            set { x = value; }
         }
 
         public double Y
         {
-            get { return this.y; }
-            set { this.y = value; }
+            get { return y; }
+            set { y = value; }
         }
 
         #region IEquatable<Point> Members

@@ -1,13 +1,11 @@
 using RDotNet.Internals;
 using System;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// Provides extension methods for <see cref="SymbolicExpression"/>.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
     public static class SymbolicExpressionExtension
     {
         /// <summary>
@@ -400,11 +398,9 @@ namespace RDotNet
                 {
                     return new ComplexMatrix(expression.Engine, expression.DangerousGetHandle());
                 }
-                else
-                {
-                    rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
-                    columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
-                }
+
+                rowCount = expression.GetFunction<Rf_nrows>()(expression.DangerousGetHandle());
+                columnCount = expression.GetFunction<Rf_ncols>()(expression.DangerousGetHandle());
             }
 
             if (columnCount == 0)

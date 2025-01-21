@@ -19,8 +19,8 @@ namespace RDotNet.Graphics
         /// </summary>
         public byte Alpha
         {
-            get { return this.alpha; }
-            set { this.alpha = value; }
+            get { return alpha; }
+            set { alpha = value; }
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace RDotNet.Graphics
         /// </summary>
         public byte Opaque
         {
-            get { return (byte)(byte.MaxValue - this.alpha); }
+            get { return (byte)(byte.MaxValue - alpha); }
         }
 
         /// <summary>
@@ -36,8 +36,8 @@ namespace RDotNet.Graphics
         /// </summary>
         public byte Red
         {
-            get { return this.red; }
-            set { this.red = value; }
+            get { return red; }
+            set { red = value; }
         }
 
         /// <summary>
@@ -45,8 +45,8 @@ namespace RDotNet.Graphics
         /// </summary>
         public byte Green
         {
-            get { return this.green; }
-            set { this.green = value; }
+            get { return green; }
+            set { green = value; }
         }
 
         /// <summary>
@@ -54,8 +54,8 @@ namespace RDotNet.Graphics
         /// </summary>
         public byte Blue
         {
-            get { return this.blue; }
-            set { this.blue = value; }
+            get { return blue; }
+            set { blue = value; }
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace RDotNet.Graphics
         /// </summary>
         public bool IsTransparent
         {
-            get { return this.alpha == 0; }
+            get { return alpha == 0; }
         }
 
         /// <summary>

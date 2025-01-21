@@ -19,7 +19,7 @@ namespace RDotNet
         {
             SetUpTest();
             // https://rdotnet.codeplex.com/workitem/77
-            var engine = this.Engine;
+            var engine = Engine;
             object expr = null;
             AssertThrows<ParseException>(
                 () => {
@@ -40,7 +40,7 @@ namespace RDotNet
 
             ReportFailOnLinux("https://rdotnet.codeplex.com/workitem/146");
 
-            var engine = this.Engine;
+            var engine = Engine;
             engine.Evaluate("fail <- function(msg) {stop(paste( 'the message is', msg))}");
             object expr = null;
             AssertThrows<EvaluationException>(
@@ -56,7 +56,7 @@ namespace RDotNet
         public void TestFailedExpressionUnboundSymbol()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             ReportFailOnLinux("https://rdotnet.codeplex.com/workitem/146");
             AssertThrows<EvaluationException>(
                 () => {
@@ -71,7 +71,7 @@ namespace RDotNet
         {
             SetUpTest();
             ReportFailOnLinux("https://rdotnet.codeplex.com/workitem/146");
-            var engine = this.Engine;
+            var engine = Engine;
             AssertThrows<EvaluationException>(
                 () => {
                     var x = engine.Evaluate("x");
@@ -92,7 +92,7 @@ namespace RDotNet
             //"
             //x"
             //>
-            var engine = this.Engine;
+            var engine = Engine;
             var expr = engine.Evaluate("x <- rep(c(TRUE,FALSE), 55");
             AssertThrows<EvaluationException>(
                 () => {

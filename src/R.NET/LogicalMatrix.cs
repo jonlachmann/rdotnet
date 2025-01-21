@@ -2,14 +2,13 @@ using RDotNet.Internals;
 using RDotNet.Utilities;
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A matrix of Boolean values.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class LogicalMatrix : Matrix<bool>
     {
         /// <summary>
@@ -102,9 +101,9 @@ namespace RDotNet
         /// <returns>Rectangular array with values representing the content of the R matrix. Beware NA codes</returns>
         protected override bool[,] GetArrayFast()
         {
-            var intValues = new int[this.ItemCount];
+            var intValues = new int[ItemCount];
             Marshal.Copy(DataPointer, intValues, 0, intValues.Length);
-            return ArrayConverter.ArrayConvertAllTwoDim(intValues, Convert.ToBoolean, this.RowCount, this.ColumnCount);
+            return ArrayConverter.ArrayConvertAllTwoDim(intValues, Convert.ToBoolean, RowCount, ColumnCount);
         }
 
         /// <summary>

@@ -3,14 +3,13 @@ using RDotNet.Utilities;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A matrix of complex numbers.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class ComplexMatrix : Matrix<Complex>
     {
         /// <summary>
@@ -107,11 +106,11 @@ namespace RDotNet
         /// <returns>Rectangular array with values representing the content of the R matrix. Beware NA codes</returns>
         protected override Complex[,] GetArrayFast()
         {
-            var n = this.ItemCount;
+            var n = ItemCount;
             var data = new double[2 * n];
             Marshal.Copy(DataPointer, data, 0, 2 * n);
             var oneDim = RTypesUtil.DeserializeComplexFromDouble(data);
-            return ArrayConverter.ArrayConvertAllTwoDim(oneDim, this.RowCount, this.ColumnCount);
+            return ArrayConverter.ArrayConvertAllTwoDim(oneDim, RowCount, ColumnCount);
         }
 
         /// <summary>

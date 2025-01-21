@@ -10,7 +10,7 @@ namespace RDotNet
         public void TestCreateEnvironment()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var newEnv = engine.CreateEnvironment(engine.BaseNamespace);
             Assert.Equal(newEnv.Type, (SymbolicExpressionType.Environment));
             Assert.NotNull(newEnv.Parent);
@@ -21,7 +21,7 @@ namespace RDotNet
         public void TestCreateIsolatedEnvironment()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var newEnv = engine.CreateIsolatedEnvironment();
             Assert.Equal(newEnv.Type, (SymbolicExpressionType.Environment));
             Assert.Null(newEnv.Parent);
@@ -31,7 +31,7 @@ namespace RDotNet
         public void TestSetSymbols()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             engine.Evaluate("rm(list=ls())");
             var env = engine.Evaluate("list2env(list(a = 1, b = 2:4, p = pi, ff = gl(3, 4, labels = LETTERS[1:3])))").AsEnvironment();
             Assert.Equal(0, engine.GlobalEnvironment.GetSymbolNames().Length);

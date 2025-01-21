@@ -2,14 +2,12 @@ using RDotNet.Internals;
 using RDotNet.Utilities;
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A matrix of byte values.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
     public class RawMatrix : Matrix<byte>
     {
         /// <summary>

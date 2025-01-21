@@ -2,14 +2,13 @@ using RDotNet.Internals;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A collection of Boolean values.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class LogicalVector : Vector<bool>
     {
         /// <summary>

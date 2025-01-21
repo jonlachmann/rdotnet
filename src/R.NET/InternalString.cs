@@ -2,7 +2,6 @@ using RDotNet.Internals;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 using System.Text;
 
 namespace RDotNet
@@ -11,7 +10,7 @@ namespace RDotNet
     /// Internal string.
     /// </summary>
     [DebuggerDisplay("Content = {ToString()}; RObjectType = {Type}")]
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class InternalString : SymbolicExpression
     {
         /// <summary>

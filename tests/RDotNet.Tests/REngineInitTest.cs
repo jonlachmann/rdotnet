@@ -122,7 +122,7 @@ namespace RDotNet
         public IRegistryKey OpenSubKey(string name)
         {
             var s = CreateStack(name);
-            return this.Find(s);
+            return Find(s);
         }
 
         internal static MockRegistryKey Parse(string localMachineTestReg)
@@ -161,7 +161,7 @@ namespace RDotNet
 
         public void AddKeyVal(string key, string val)
         {
-            this.keyValues[key] = val;
+            keyValues[key] = val;
         }
 
         private static Stack<string> CreateStack(string fullKey)
@@ -234,7 +234,7 @@ namespace RDotNet
         {
             if (s.Count() == 0) return null;
             string k = s.Pop();
-            var existing = this.subKeys.Where(m => m.ShortName == k);
+            var existing = subKeys.Where(m => m.ShortName == k);
             MockRegistryKey topKey = null;
             if (existing.Count() > 0) topKey = existing.First();
             if (s.Count() == 0) return topKey;
@@ -418,7 +418,7 @@ namespace RDotNet
         public void TestGetPathInitSearchLog()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var log = NativeUtility.SetEnvironmentVariablesLog;
             Assert.NotEqual(string.Empty, log);
         }
@@ -428,7 +428,7 @@ namespace RDotNet
         {
             // This test was designed to look at a symptom observed alongside the issue https://github.com/rdotnet/rdotnet/issues/127  
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var se = engine.Evaluate("set.seed");
 
             if(NativeUtility.GetPlatform() == PlatformID.Win32NT)

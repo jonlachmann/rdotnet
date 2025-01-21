@@ -9,7 +9,7 @@ namespace RDotNet
    {
       public static void SetEnvironmentVariables()
       {
-         var rhome = Environment.GetEnvironmentVariable("R_HOME");
+         var rHome = Environment.GetEnvironmentVariable("R_HOME");
          var currentPath = Environment.GetEnvironmentVariable("PATH");
          switch (NativeUtility.GetPlatform())
          {
@@ -18,7 +18,7 @@ namespace RDotNet
                break;
 
             case PlatformID.MacOSX:
-               if (string.IsNullOrEmpty(rhome))
+               if (string.IsNullOrEmpty(rHome))
                {
                   Environment.SetEnvironmentVariable("R_HOME", "/Library/Frameworks/R.framework/Resources");
                }
@@ -26,13 +26,20 @@ namespace RDotNet
                break;
 
             case PlatformID.Unix:
-               if (string.IsNullOrEmpty(rhome))
+               if (string.IsNullOrEmpty(rHome))
                {
                   Environment.SetEnvironmentVariable("R_HOME", "/usr/lib/R");
                }
                // TODO: cater for cases where user has build R from source and installed to e.g. /usr/local/lib
                Environment.SetEnvironmentVariable("PATH", "/usr/lib" + Path.PathSeparator + currentPath);
                break;
+            case PlatformID.Win32S:
+            case PlatformID.Win32Windows:
+            case PlatformID.WinCE:
+            case PlatformID.Xbox:
+            case PlatformID.Other:
+            default:
+               throw new PlatformNotSupportedException();
          }
       }
 

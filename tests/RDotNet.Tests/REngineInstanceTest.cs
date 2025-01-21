@@ -1,8 +1,6 @@
 using Xunit;
 using RDotNet.Devices;
 using System;
-using System.IO;
-using System.Reflection;
 
 namespace RDotNet
 {

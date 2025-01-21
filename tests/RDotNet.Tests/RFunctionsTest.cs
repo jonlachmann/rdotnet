@@ -11,7 +11,7 @@ namespace RDotNet
         public void TestBuiltinFunctions()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
 
             // function (x)  .Primitive("abs")
             var abs = engine.GetSymbol("abs").AsFunction();
@@ -29,7 +29,7 @@ namespace RDotNet
         public void TestStatsFunctions()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
 
             //> a <- dpois(0:7, lambda = 0.9)
             //> signif(a, 2)
@@ -87,7 +87,7 @@ printPairList <- function(...) {
         public void TestGenericFunction()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
 
             var funcDef = @"
 setGeneric( 'f', function(x, ...) {
@@ -147,7 +147,7 @@ setMethod( 'f', 'numeric', function(x, ...) { paste( 'f.numeric called:', printP
             // Investigates http://stackoverflow.com/questions/26803752/r-net-invoke-function-does-not-work/26950937#26950937
             // Consider removing or morphing into another test on data coercion; there did not appear to be any issue as reported.
 
-            var engine = this.Engine;
+            var engine = Engine;
 
             var funcDef = @"function() {return(data.frame(a=1:4, b=5:8))}";
             var f = engine.Evaluate(funcDef).AsFunction();
@@ -181,7 +181,7 @@ setMethod( 'f', 'numeric', function(x, ...) { paste( 'f.numeric called:', printP
         public void TestArgumentMatching()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
 
             var funcDef = @"function(a, b, cc=NULL, d='d', e=length(d), f=FALSE, g=123.4) {
   r <- paste0('a=', ifelse(missing(a),'missing_a',a))
@@ -277,7 +277,7 @@ g <- function(x, ..., y) {
         private SymbolicExpression CreateSexp(object value)
         {
             var t = value.GetType();
-            var engine = this.Engine;
+            var engine = Engine;
             if (t == typeof(int))
                 return engine.CreateInteger((int)value);
             if (t == typeof(double))

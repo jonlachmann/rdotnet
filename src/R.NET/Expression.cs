@@ -30,7 +30,7 @@ namespace RDotNet
                 throw new ArgumentException(null, "environment");
             }
 
-            return new SymbolicExpression(Engine, this.GetFunction<Rf_eval>()(handle, environment.DangerousGetHandle()));
+            return new SymbolicExpression(Engine, GetFunction<Rf_eval>()(handle, environment.DangerousGetHandle()));
         }
 
         /// <summary>

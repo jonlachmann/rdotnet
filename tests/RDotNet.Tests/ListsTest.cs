@@ -9,7 +9,7 @@ namespace RDotNet
         {
             SetUpTest();
             //https://rdotnet.codeplex.com/workitem/81
-            var engine = this.Engine;
+            var engine = Engine;
             var pairList = engine.Evaluate("pairlist(a=5)");
             var aList = engine.Evaluate("list(a=5)");
             bool b = aList.AsList().IsList();
@@ -22,7 +22,7 @@ namespace RDotNet
         {
             SetUpTest();
             //https://rdotnet.codeplex.com/workitem/81
-            var engine = this.Engine;
+            var engine = Engine;
             var numlist = engine.Evaluate("c(1.5, 2.5)").AsList();
             var numListString = numlist.ToString();
             var element = numlist[1];
@@ -33,7 +33,7 @@ namespace RDotNet
         {
             SetUpTest();
             //  http://stackoverflow.com/questions/33326594/how-can-i-create-named-list-members-object-in-r-net
-            var engine = this.Engine;
+            var engine = Engine;
             var list = new GenericVector(engine, 2);
             // odpar <- list(mean = c(-1.5, 0, 1.5), var = c(0.5, 0.6, 0.8)) 
             list[0] = engine.CreateNumericVector(new[] { -1.5, 0, 1.5 });
@@ -59,7 +59,7 @@ namespace RDotNet
    >
              */
 
-            var engine = this.Engine;
+            var engine = Engine;
             var functionAsList = engine.Evaluate("as.list").AsList();
             Assert.Equal(3, functionAsList.Length);
             Assert.True(functionAsList[0].IsSymbol());

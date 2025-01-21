@@ -9,7 +9,7 @@ namespace RDotNet
         public void TestDefaultClearGlobalEnv()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             engine.ClearGlobalEnvironment();
             var s = engine.Evaluate("ls()").AsCharacter().ToArray();
             Assert.True(s.Length == 0);
@@ -19,7 +19,7 @@ namespace RDotNet
         public void TestDetachPackagesDefault()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
 
             var s = engine.Evaluate("search()").AsCharacter().ToArray();
             Assert.False(s.Contains("package:lattice"));

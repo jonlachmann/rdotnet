@@ -11,7 +11,7 @@ namespace RDotNet
 
         public MockDevice()
         {
-            this.builder = new StringBuilder();
+            builder = new StringBuilder();
         }
 
         public string Input { get; set; }
@@ -22,18 +22,18 @@ namespace RDotNet
 
         public string ReadConsole(string prompt, int capacity, bool history)
         {
-            this.builder.Append(prompt);
+            builder.Append(prompt);
             return Input;
         }
 
         public void WriteConsole(string output, int length, ConsoleOutputType outputType)
         {
-            this.builder.Append(output);
+            builder.Append(output);
         }
 
         public void ShowMessage(string message)
         {
-            this.builder.Append(message);
+            builder.Append(message);
         }
 
         public void Busy(BusyType which)
@@ -46,7 +46,7 @@ namespace RDotNet
 
         public YesNoCancel Ask(string question)
         {
-            this.builder.Append(question);
+            builder.Append(question);
             return Answer;
         }
 
@@ -57,7 +57,7 @@ namespace RDotNet
 
         public void ResetConsole()
         {
-            this.builder.Clear();
+            builder.Clear();
         }
 
         public void FlushConsole()
@@ -109,14 +109,14 @@ namespace RDotNet
 
         public void Initialize()
         {
-            this.builder.Clear();
+            builder.Clear();
             Input = null;
             Answer = YesNoCancel.Cancel;
         }
 
         public string GetString()
         {
-            return this.builder.ToString();
+            return builder.ToString();
         }
     }
 }

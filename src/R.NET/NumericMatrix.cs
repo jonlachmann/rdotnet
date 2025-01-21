@@ -2,14 +2,13 @@ using RDotNet.Internals;
 using RDotNet.Utilities;
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A matrix of real numbers in double precision.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class NumericMatrix : Matrix<double>
     {
         /// <summary>
@@ -111,9 +110,9 @@ namespace RDotNet
         /// <returns>Rectangular array with values representing the content of the R matrix. Beware NA codes</returns>
         protected override double[,] GetArrayFast()
         {
-            var values = new double[this.ItemCount];
+            var values = new double[ItemCount];
             Marshal.Copy(DataPointer, values, 0, values.Length);
-            return ArrayConverter.ArrayConvertAllTwoDim(values, this.RowCount, this.ColumnCount);
+            return ArrayConverter.ArrayConvertAllTwoDim(values, RowCount, ColumnCount);
         }
 
         /// <summary>

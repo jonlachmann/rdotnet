@@ -15,7 +15,7 @@ namespace RDotNet
             // at least on Windows, it is overriden by the rest of the initialization procedure.
             // While multiple issues are releated, see for instance issue 115.
 
-            var engine = this.Engine;
+            var engine = Engine;
             var r = new RuntimeDiagnostics(engine);
             int sizeEach = 20;
             int n = 100;

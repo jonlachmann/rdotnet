@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -30,7 +29,7 @@ namespace RDotNet
     /// }
     /// </code>
     /// </example>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+
     public class REngine : DynamicInterop.UnmanagedDll
     {
         /// <summary>
@@ -80,7 +79,7 @@ namespace RDotNet
             IsRunning = false;
             Disposed = false;
             EnableLock = true; // See https://rdotnet.codeplex.com/workitem/113; it seems wise to enable it by default.
-            AutoPrint = false;  // 2019-05 changing to false by default, as this impacts the default performance drastically. There was an argument for a true default, but now I things this is superseded.
+            AutoPrint = false;  // 2019-05 changing to false by default, as this impacts the default performance drastically. There was an argument for a true default, but now I think this is superseded.
         }
 
         /// <summary>
@@ -117,7 +116,7 @@ namespace RDotNet
         /// <summary>
         /// Gets the ID of this instance.
         /// </summary>
-        public string ID => this._id;
+        public string ID => _id;
 
         /// <summary>
         /// Gets the R compatibility mode, based on the version of R used.
@@ -451,14 +450,14 @@ namespace RDotNet
             switch (NativeUtility.GetPlatform())
             {
                 case PlatformID.Win32NT:
-                    GetFunction<R_SetParams_Windows>("R_SetParams")(ref this._parameter.Start);
+                    GetFunction<R_SetParams_Windows>("R_SetParams")(ref _parameter.Start);
                     // also workaround for https://github.com/rdotnet/rdotnet/issues/127  : R.dll is intent on overriding R_HOME and PATH even if --no-environ is specified...
                     ResetCachedEnvironmentVariables();
                     break;
 
                 case PlatformID.MacOSX:
                 case PlatformID.Unix:
-                    GetFunction<R_SetParams_Unix>("R_SetParams")(ref this._parameter.Start.Common);
+                    GetFunction<R_SetParams_Unix>("R_SetParams")(ref _parameter.Start.Common);
                     //Console.WriteLine("Initialize-R_SetParams_Unix; R_CStackLimit value is " + GetDangerousInt32("R_CStackLimit"));
                     break;
             }
@@ -783,7 +782,7 @@ namespace RDotNet
             if (trimmedLine == string.Empty)
                 return Array.Empty<string>();
             if (trimmedLine.StartsWith("#"))
-                return new string[] { line };
+                return new[] { line };
 
             var statement = splitOnFirst(line, out var theRest, ';');
 
@@ -810,7 +809,7 @@ namespace RDotNet
                 }
                 else
                 {
-                    result.Add(statement.Substring(0, firstComment));
+                    result.Add(statement[..firstComment]);
                     // firstComment is a valid comment marker - not need to process "the rest"
                 }
 
@@ -922,7 +921,7 @@ namespace RDotNet
 
                     case ParseStatus.Error:
                         // TODO: use LastErrorMessage if below is just a subset
-                        var parseErrorMsg = this.GetAnsiString("R_ParseErrorMsg");
+                        var parseErrorMsg = GetAnsiString("R_ParseErrorMsg");
                         errorStatement = incompleteStatement.ToString();
                         incompleteStatement.Clear();
                         throw new ParseException(status, errorStatement, parseErrorMsg);
@@ -1098,7 +1097,7 @@ namespace RDotNet
             if (detachPackages)
                 DoDetachPackages(toDetach);
             var rmStatement = removeHiddenRVars ? "rm(list=ls(all.names=TRUE))" : "rm(list=ls())";
-            this.Evaluate(rmStatement);
+            Evaluate(rmStatement);
             if (garbageCollectDotNet)
             {
                 DoDotNetGarbageCollection();

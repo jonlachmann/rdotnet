@@ -19,34 +19,34 @@ namespace RDotNet.Graphics
 
         public Rectangle(Point location, Size size)
         {
-            this.x = location.X;
-            this.y = location.Y;
-            this.width = size.Width;
-            this.height = size.Height;
+            x = location.X;
+            y = location.Y;
+            width = size.Width;
+            height = size.Height;
         }
 
         public double X
         {
-            get { return this.x; }
-            set { this.x = value; }
+            get { return x; }
+            set { x = value; }
         }
 
         public double Y
         {
-            get { return this.y; }
-            set { this.y = value; }
+            get { return y; }
+            set { y = value; }
         }
 
         public double Width
         {
-            get { return this.width; }
-            set { this.width = value; }
+            get { return width; }
+            set { width = value; }
         }
 
         public double Height
         {
-            get { return this.height; }
-            set { this.height = value; }
+            get { return height; }
+            set { height = value; }
         }
 
         public double Left

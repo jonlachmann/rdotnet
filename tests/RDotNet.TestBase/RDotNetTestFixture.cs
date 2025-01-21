@@ -1,164 +1,157 @@
 using Xunit;
-using RDotNet.NativeLibrary;
 using System;
 using System.Linq;
 using System.Numerics;
 
-namespace RDotNet
+namespace RDotNet;
+
+[Collection("R.NET unit tests")]
+public class RDotNetTestFixture
 {
-    [Collection("R.NET unit tests")]
-    public class RDotNetTestFixture
+    private static readonly MockDevice device = new();
+
+    //      protected string EngineName { get { return "RDotNetTest"; } }
+
+    protected MockDevice Device => device;
+
+    private static REngine _engine;
+
+    protected REngine Engine => _engine;
+
+    private readonly bool initializeOnceOnly = true;
+
+    protected static void ReportFailOnLinux(string additionalMsg)
     {
-        private static readonly MockDevice device = new();
+        // 2020-10: on .NET core 3.1 on Linux, Linux only failing tests seem to be OK now
+        //if (NativeUtility.IsUnix)
+        //    throw new NotSupportedException("This unit test is problematic to run from NUnit on Linux " + additionalMsg);
+    }
 
-        //      protected string EngineName { get { return "RDotNetTest"; } }
+    protected RDotNetTestFixture()
+    {
+        SetUpFixture();
+    }
 
-        protected MockDevice Device => device;
-
-        private static REngine engine = null;
-
-        protected REngine Engine { get { return engine; } }
-
-        private readonly bool initializeOnceOnly = true;
-
-        protected static void ReportFailOnLinux(string additionalMsg)
+    //[SetUp]
+    protected virtual void SetUpFixture()
+    {
+        lock (this)
         {
-            // 2020-10: on .NET core 3.1 on Linux, Linux only failing tests seem to be OK now
-            //if (NativeUtility.IsUnix)
-            //    throw new NotSupportedException("This unit test is problematic to run from NUnit on Linux " + additionalMsg);
+            if (initializeOnceOnly && _engine != null)
+                return;
+            REngine.SetEnvironmentVariables();
+            _engine = REngine.GetInstance(dll: null, initialize: true, parameter: null, device: Device);
         }
+    }
 
-        protected RDotNetTestFixture()
-        {
-            SetUpFixture();
-        }
+    //[TearDown]
+    protected virtual void TearDownFixture()
+    {
+        _engine?.ClearGlobalEnvironment();
+    }
 
-        //[SetUp]
-        protected virtual void SetUpFixture()
-        {
-            lock (this)
-            {
-                if (initializeOnceOnly && engine != null)
-                    return;
-                REngine.SetEnvironmentVariables();
-                engine = REngine.GetInstance(dll: null, initialize: true, parameter: null, device: Device);
-            }
-        }
+    //[SetUp]
+    protected virtual void SetUpTest()
+    {
+        _engine.Evaluate("rm(list=ls())");
+        Device.Initialize();
+    }
 
-        //[TearDown]
-        protected virtual void TearDownFixture()
-        {
-            engine?.ClearGlobalEnvironment();
-        }
+    protected static double GetRMemorySize(REngine engine)
+    {
+        var memoryAfterAlloc = engine.Evaluate("memory.size()").AsNumeric().First();
+        return memoryAfterAlloc;
+    }
 
-        //[SetUp]
-        protected virtual void SetUpTest()
-        {
-            engine.Evaluate("rm(list=ls())");
-            this.Device.Initialize();
-        }
+    protected static void GarbageCollectRandClr(REngine engine)
+    {
+        // it seems needed to call gc() twice to get a proper baseline.
+        REngine.DoDotNetGarbageCollection();
+        engine.ForceGarbageCollection();
+        REngine.DoDotNetGarbageCollection();
+        engine.ForceGarbageCollection();
+    }
 
-        protected static double GetRMemorySize(REngine engine)
-        {
-            var memoryAfterAlloc = engine.Evaluate("memory.size()").AsNumeric().First();
-            return memoryAfterAlloc;
-        }
+    protected double[] GenArrayDouble(int from, int to)
+    {
+        return Array.ConvertAll(GenArrayInteger(from, to), input => (double)input);
+    }
 
-        protected static void GarbageCollectRandClr(REngine engine)
-        {
-            // it seems needed to call gc() twice to get a proper baseline.
-            REngine.DoDotNetGarbageCollection();
-            engine.ForceGarbageCollection();
-            REngine.DoDotNetGarbageCollection();
-            engine.ForceGarbageCollection();
-        }
+    protected static T[,] ToMatrix<T>(T[] d, int nrow, int ncol)
+    {
+        var res = new T[nrow, ncol];
+        for (var i = 0; i < nrow; i++)
+        for (var j = 0; j < ncol; j++)
+            res[i, j] = d[nrow * j + i];
+        return res;
+    }
 
-        protected double[] GenArrayDouble(int from, int to)
-        {
-            return Array.ConvertAll(GenArrayInteger(from, to), input => (double)input);
-        }
+    protected double[] ArrayMult(double[] a, double mult)
+    {
+        return Array.ConvertAll(a, input => input * mult);
+    }
 
-        protected static T[,] ToMatrix<T>(T[] d, int nrow, int ncol)
-        {
-            var res = new T[nrow, ncol];
-            for (int i = 0; i < nrow; i++)
-                for (int j = 0; j < ncol; j++)
-                    res[i, j] = d[nrow * j + i];
-            return res;
-        }
+    protected int[] GenArrayInteger(int from, int to)
+    {
+        Assert.True(to > from);
+        var res = new int[to - from + 1];
+        for (var i = 0; i < (to - from + 1); i++)
+            res[i] = i + from;
+        return res;
+    }
 
-        protected double[] ArrayMult(double[] a, double mult)
-        {
-            return Array.ConvertAll(a, input => input * mult);
-        }
+    protected string[] GenArrayCharacter(int from, int to)
+    {
+        Assert.True(to > from);
+        var res = new string[to - from + 1];
+        for (var i = 0; i < (to - from + 1); i++)
+            res[i] = (i + from).ToString();
+        return res;
+    }
 
-        protected int[] GenArrayInteger(int from, int to)
-        {
-            Assert.True(to > from);
-            var res = new int[to - from + 1];
-            for (int i = 0; i < (to - from + 1); i++)
-                res[i] = i + from;
-            return res;
-        }
+    // I thought NUnit was dealing with array equivalence. Cannot see here, so emulate.
+    protected static void CheckArrayEqual<T>(T[] a, T[] expected)
+    {
+        Assert.Equal(expected.Length, a.Length);
+        for (var i = 0; i < a.Length; i++)
+            AssertElementsAreEqual(a[i], expected[i]); //, 1e-9);
+    }
 
-        protected string[] GenArrayCharacter(int from, int to)
-        {
-            Assert.True(to > from);
-            var res = new string[to - from + 1];
-            for (int i = 0; i < (to - from + 1); i++)
-                res[i] = (i + from).ToString();
-            return res;
-        }
+    public static void AssertComplexAreEqual(Complex actual, Complex expected)
+    {
+        // TestCreateComplexValid test otherwise fails on Mono, for NA values for R complex vectors.
+        if (double.IsNaN(expected.Real))
+            Assert.True(double.IsNaN(actual.Real));
+        if (double.IsNaN(expected.Imaginary))
+            Assert.True(double.IsNaN(actual.Imaginary));
+        if (!double.IsNaN(expected.Real) && !double.IsNaN(expected.Imaginary))
+            Assert.Equal(expected, actual);
+    }
 
-        // I thought NUnit was dealing with array equivalence. Cannot see here, so emulate.
-        protected static void CheckArrayEqual<T>(T[] a, T[] expected)
-        {
-            Assert.Equal(expected.Length, a.Length);
-            for (int i = 0; i < a.Length; i++)
-                AssertElementsAreEqual(a[i], expected[i]); //, 1e-9);
-        }
+    protected static void AssertElementsAreEqual<T>(T actual, T expected)
+    {
+        // Yuck, but
+        // TestCreateComplexValid test otherwise fails on Mono, for NA values for R complex vectors.
+        if (typeof(T) == typeof(Complex))
+            AssertComplexAreEqual((Complex)(object)actual, (Complex)(object)expected);
+        else
+            Assert.Equal(expected, actual);
+    }
 
-        public static void AssertComplexAreEqual(Complex actual, Complex expected)
-        {
-            // TestCreateComplexValid test otherwise fails on Mono, for NA values for R complex vectors.
-            if (double.IsNaN(expected.Real))
-                Assert.True(double.IsNaN(actual.Real));
-            if (double.IsNaN(expected.Imaginary))
-                Assert.True(double.IsNaN(actual.Imaginary));
-            if (!double.IsNaN(expected.Real) && !double.IsNaN(expected.Imaginary))
-                Assert.Equal(expected, actual);
-        }
+    // I thought NUnit was dealing with array equivalence. Cannot see here, so emulate.
+    protected static void CheckArrayEqual<T>(T[,] a, T[,] expected)
+    {
+        Assert.Equal(expected.Length, a.Length);
+        for (var i = 0; i < 2; i++)
+            Assert.Equal(expected.GetLength(i), a.GetLength(i));
+        for (var i = 0; i < a.GetLength(0); i++)
+        for (var j = 0; j < a.GetLength(1); j++)
+            Assert.Equal(expected[i, j], a[i, j]); //, 1e-9);
+    }
 
-        protected static void AssertElementsAreEqual<T>(T actual, T expected)
-        {
-            // Yuck, but
-            // TestCreateComplexValid test otherwise fails on Mono, for NA values for R complex vectors.
-            if (typeof(T) == typeof(Complex))
-                AssertComplexAreEqual((Complex)(object)actual, (Complex)(object)expected);
-            else
-                Assert.Equal(expected, actual);
-        }
-
-        // I thought NUnit was dealing with array equivalence. Cannot see here, so emulate.
-        protected static void CheckArrayEqual<T>(T[,] a, T[,] expected)
-        {
-            Assert.Equal(expected.Length, a.Length);
-            for (int i = 0; i < 2; i++)
-                Assert.Equal(expected.GetLength(i), a.GetLength(i));
-            for (int i = 0; i < a.GetLength(0); i++)
-                for (int j = 0; j < a.GetLength(1); j++)
-                    Assert.Equal(expected[i, j], a[i, j]); //, 1e-9);
-        }
-
-        public static void AssertThrows<T>(Action testCode, string expectedMsg) where T : System.Exception
-        {
-            T result = Assert.Throws<T>(testCode);
-            Assert.Equal(result.Message, expectedMsg);
-        }
-
-        public void AssertFail(string message)
-        {
-            Assert.True(false, message);
-        }
+    public static void AssertThrows<T>(Action testCode, string expectedMsg) where T : Exception
+    {
+        var result = Assert.Throws<T>(testCode);
+        Assert.Equal(result.Message, expectedMsg);
     }
 }

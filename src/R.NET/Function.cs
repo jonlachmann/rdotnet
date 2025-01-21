@@ -119,7 +119,7 @@ namespace RDotNet
 
         private SymbolicExpression createCallAndEvaluate(IntPtr argument)
         {
-            using var call = new ProtectedPointer(Engine, this.GetFunction<Rf_lcons>()(handle, argument));
+            using var call = new ProtectedPointer(Engine, GetFunction<Rf_lcons>()(handle, argument));
             using var result = evaluateCall(call);
             return new SymbolicExpression(Engine, result);
         }
@@ -136,11 +136,9 @@ namespace RDotNet
             var rfInstall = GetFunction<Rf_install>();
             var rSetTag = GetFunction<SET_TAG>();
             var rfCons = GetFunction<Rf_cons>();
-            foreach (var arg in args.Reverse())
+            foreach (var (name, sexp) in args.Reverse())
             {
-                var sexp = arg.Item2;
                 argument = rfCons(sexp.DangerousGetHandle(), argument);
-                var name = arg.Item1;
                 if (!string.IsNullOrEmpty(name))
                 {
                     rSetTag(argument, rfInstall(name));

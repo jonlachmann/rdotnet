@@ -9,7 +9,7 @@ namespace RDotNet
         public void TestLength()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var factor = engine.Evaluate("factor(c('A', 'B', 'A', 'C', 'B'))").AsFactor();
             Assert.Equal(factor.Length, (5));
         }
@@ -18,7 +18,7 @@ namespace RDotNet
         public void TestIsOrderedTrue()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var factor = engine.Evaluate("factor(c('A', 'B', 'A', 'C', 'B'), ordered=TRUE)").AsFactor();
             Assert.Equal(factor.IsOrdered, true);
         }
@@ -27,7 +27,7 @@ namespace RDotNet
         public void TestMissingValues()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var factor = engine.Evaluate("x <- factor(c('A', 'B', 'A', NA, 'C', 'B'), ordered=TRUE)").AsFactor();
             Assert.Equal(factor.GetFactors(), (new[] { "A", "B", "A", null, "C", "B" }));
             factor = engine.Evaluate(@"
@@ -41,7 +41,7 @@ x
         public void TestIsOrderedFalse()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var factor = engine.Evaluate("factor(c('A', 'B', 'A', 'C', 'B'), ordered=FALSE)").AsFactor();
             Assert.Equal(factor.IsOrdered, false);
         }
@@ -50,7 +50,7 @@ x
         public void TestGetLevels()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var factor = engine.Evaluate("x <- factor(c('A', 'B', 'A', 'C', 'B'))").AsFactor();
             Assert.Equal(factor.GetLevels(), (new[] { "A", "B", "C" }));
             factor = engine.Evaluate(@"
@@ -64,7 +64,7 @@ x
         public void TestGetFactors()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var factor = engine.Evaluate("x <- factor(c('A', 'B', 'A', 'C', 'B'))").AsFactor();
             Assert.Equal(factor.GetFactors(), (new[] { "A", "B", "A", "C", "B" }));
             factor = engine.Evaluate(@"
@@ -78,7 +78,7 @@ x
         public void TestGetFactorsEnum()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var code = "factor(c(rep('T', 5), rep('C', 5), rep('T', 4), rep('C', 5)), levels=c('T', 'C'), labels=c('Treatment', 'Control'))";
             var factor = engine.Evaluate(code).AsFactor();
             var expected = Enumerable.Repeat(Group.Treatment, 5)
@@ -92,7 +92,7 @@ x
         public void TestAsCharacterFactors()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var c = engine.Evaluate("as.factor(rep(letters[1:3], 5))").AsCharacter();
             Assert.Equal("a", c[0]);
             Assert.Equal("b", c[1]);

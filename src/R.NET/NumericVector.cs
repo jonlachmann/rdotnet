@@ -2,14 +2,12 @@ using RDotNet.Internals;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A collection of real numbers in double precision.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
     public class NumericVector : Vector<double>
     {
         /// <summary>

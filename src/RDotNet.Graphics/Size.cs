@@ -15,21 +15,21 @@ namespace RDotNet.Graphics
 
         public double Width
         {
-            get { return this.width; }
-            set { this.width = value; }
+            get => width;
+            set => width = value;
         }
 
         public double Height
         {
-            get { return this.height; }
-            set { this.height = value; }
+            get => height;
+            set => height = value;
         }
 
         #region IEquatable<Size> Members
 
         public bool Equals(Size other)
         {
-            return (this == other);
+            return this == other;
         }
 
         #endregion IEquatable<Size> Members
@@ -52,12 +52,8 @@ namespace RDotNet.Graphics
 
         public override bool Equals(object obj)
         {
-            if (obj is Size)
-            {
-                var size = (Size)obj;
-                return (this == size);
-            }
-            return false;
+            if (obj is not Size size) return false;
+            return (this == size);
         }
     }
 }

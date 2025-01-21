@@ -3,8 +3,6 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Collections.Generic;
-using System.Collections;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -153,48 +151,45 @@ namespace RDotNet.NativeLibrary
         /// <returns>A console friendly output of the paths discovery process</returns>
         public string FindRPaths(ref string rPath, ref string rHome)
         {
-            StringBuilder logger = new StringBuilder();
+            var logger = new StringBuilder();
             FindRPaths(ref rPath, ref rHome, logger);
             return logger.ToString();
         }
 
         private void FindRPaths(ref string rPath, ref string rHome, StringBuilder logSetEnvVar)
         {
-            doLogSetEnvVarInfo(string.Format("caller provided rPath={0}, rHome={1}",
-               rPath == null ? "null" : rPath,
-               rHome == null ? "null" : rHome), logSetEnvVar);
+            doLogSetEnvVarInfo($"caller provided rPath={rPath ?? "null"}, rHome={rHome ?? "null"}", logSetEnvVar);
 
             if (string.IsNullOrEmpty(rHome))
             {
                 rHome = GetRHomeEnvironmentVariable();
-                doLogSetEnvVarInfo(string.Format("R.NET looked for preset R_HOME env. var. Found {0}",
-                   rHome == null ? "null" : rHome), logSetEnvVar);
+                doLogSetEnvVarInfo($"R.NET looked for preset R_HOME env. var. Found {rHome ?? "null"}", logSetEnvVar);
             }
             if (string.IsNullOrEmpty(rHome))
             {
                 rHome = FindRHome(rPath: null, logger: logSetEnvVar);
-                doLogSetEnvVarInfo(string.Format("R.NET looked for platform-specific way (e.g. win registry). Found {0}",
-                   rHome == null ? "null" : rHome), logSetEnvVar);
+                doLogSetEnvVarInfo(
+                    $"R.NET looked for platform-specific way (e.g. win registry). Found {rHome ?? "null"}", logSetEnvVar);
                 if (!string.IsNullOrEmpty(rHome))
                 {
                     if (rPath == null)
                     {
                         rPath = FindRPath(rHome);
-                        doLogSetEnvVarInfo(string.Format("R.NET trying to find rPath based on rHome; Deduced {0}",
-                           rPath == null ? "null" : rPath), logSetEnvVar);
+                        doLogSetEnvVarInfo(
+                            $"R.NET trying to find rPath based on rHome; Deduced {rPath ?? "null"}", logSetEnvVar);
                     }
                     if (rPath == null)
                     {
                         rPath = FindRPath();
-                        doLogSetEnvVarInfo(string.Format("R.NET trying to find rPath, independently of rHome; Deduced {0}",
-                           rPath == null ? "null" : rPath), logSetEnvVar);
+                        doLogSetEnvVarInfo(
+                            $"R.NET trying to find rPath, independently of rHome; Deduced {rPath ?? "null"}", logSetEnvVar);
                     }
                 }
                 else
                 {
                     rHome = FindRHome(rPath);
-                    doLogSetEnvVarInfo(string.Format("R.NET trying to find rHome based on rPath; Deduced {0}",
-                       rHome == null ? "null" : rHome), logSetEnvVar);
+                    doLogSetEnvVarInfo(
+                        $"R.NET trying to find rHome based on rPath; Deduced {rHome ?? "null"}", logSetEnvVar);
                 }
             }
             if (string.IsNullOrEmpty(rHome))
@@ -203,12 +198,10 @@ namespace RDotNet.NativeLibrary
 
         private void doLogSetEnvVar(string level, string msg, StringBuilder logSetEnvVar)
         {
-            if (logSetEnvVar != null)
-            {
-                logSetEnvVar.Append(level);
-                logSetEnvVar.Append(": ");
-                logSetEnvVar.AppendLine(msg);
-            }
+            if (logSetEnvVar == null) return;
+            logSetEnvVar.Append(level);
+            logSetEnvVar.Append(": ");
+            logSetEnvVar.AppendLine(msg);
         }
 
         private void doLogSetEnvVarWarn(string msg, StringBuilder logger)
@@ -300,14 +293,14 @@ namespace RDotNet.NativeLibrary
 
         private string GetRhomeWin32NT(StringBuilder logger)
         {
-            IRegistryKey rCoreKey = GetRCoreRegistryKeyWin32(logger);
+            var rCoreKey = GetRCoreRegistryKeyWin32(logger);
             return GetRInstallPathFromRCoreKegKey(rCoreKey, logger);
         }
 
         private static void CheckDirExists(string rPath)
         {
             if (!Directory.Exists(rPath))
-                throw new ArgumentException(string.Format("Specified directory not found: '{0}'", rPath));
+                throw new ArgumentException($"Specified directory not found: '{rPath}'");
         }
 
         private string ConstructRPath(string rHome)
@@ -412,10 +405,7 @@ namespace RDotNet.NativeLibrary
 
         private string FindRPathWindows(string rHome)
         {
-            if (!string.IsNullOrEmpty(rHome))
-                return ConstructRPath(rHome);
-            else
-                return FindRPathFromRegistry();
+            return !string.IsNullOrEmpty(rHome) ? ConstructRPath(rHome) : FindRPathFromRegistry();
         }
 
         private static void SetenvPrepend(string rPath, string envVarName = "PATH")
@@ -454,8 +444,8 @@ namespace RDotNet.NativeLibrary
         public string FindRPathFromRegistry(StringBuilder logger = null)
         {
             CheckPlatformWin32();
-            bool is64Bit = Environment.Is64BitProcess;
-            IRegistryKey rCoreKey = GetRCoreRegistryKeyWin32(logger);
+            var is64Bit = Environment.Is64BitProcess;
+            var rCoreKey = GetRCoreRegistryKeyWin32(logger);
             var installPath = GetRInstallPathFromRCoreKegKey(rCoreKey, logger);
             var currentVersion = GetRVersionFromRegistry();
             var bin = Path.Combine(installPath, "bin");
@@ -467,53 +457,49 @@ namespace RDotNet.NativeLibrary
         private string GetRInstallPathFromRCoreKegKey(IRegistryKey rCoreKey, StringBuilder logger)
         {
             string installPath = null;
-            string[] subKeyNames = rCoreKey.GetSubKeyNames();
-            string[] valueNames = rCoreKey.GetValueNames();
+            var subKeyNames = rCoreKey.GetSubKeyNames();
+            var valueNames = rCoreKey.GetValueNames();
             if (valueNames.Length == 0)
             {
                 doLogSetEnvVarWarn("Did not find any value names under " + rCoreKey, logger);
                 return RecurseFirstSubkey(rCoreKey, logger);
             }
+
+            const string installPathKey = "InstallPath";
+            if (valueNames.Contains(installPathKey))
+            {
+                doLogSetEnvVarInfo("Found sub-key InstallPath under " + rCoreKey, logger);
+                installPath = (string)rCoreKey.GetValue(installPathKey);
+            }
             else
             {
-                const string installPathKey = "InstallPath";
-                if (valueNames.Contains(installPathKey))
+                doLogSetEnvVarInfo("Did not find sub-key InstallPath under " + rCoreKey, logger);
+                if (valueNames.Contains("Current Version"))
                 {
-                    doLogSetEnvVarInfo("Found sub-key InstallPath under " + rCoreKey, logger);
-                    installPath = (string)rCoreKey.GetValue(installPathKey);
+                    doLogSetEnvVarInfo("Found sub-key Current Version under " + rCoreKey, logger);
+                    var currentVersion = GetRCurrentVersionStringFromRegistry(rCoreKey);
+                    if (subKeyNames.Contains(currentVersion))
+                    {
+                        var rVersionCoreKey = rCoreKey.OpenSubKey(currentVersion);
+                        return GetRInstallPathFromRCoreKegKey(rVersionCoreKey, logger);
+                    }
+
+                    doLogSetEnvVarWarn("Sub key "+ currentVersion + " not found in " + rCoreKey, logger);
                 }
                 else
                 {
-                    doLogSetEnvVarInfo("Did not find sub-key InstallPath under " + rCoreKey, logger);
-                    if (valueNames.Contains("Current Version"))
-                    {
-                        doLogSetEnvVarInfo("Found sub-key Current Version under " + rCoreKey, logger);
-                        string currentVersion = GetRCurrentVersionStringFromRegistry(rCoreKey);
-                        if (subKeyNames.Contains(currentVersion))
-                        {
-                            IRegistryKey rVersionCoreKey = rCoreKey.OpenSubKey(currentVersion);
-                            return GetRInstallPathFromRCoreKegKey(rVersionCoreKey, logger);
-                        }
-                        else
-                        {
-                            doLogSetEnvVarWarn("Sub key "+ currentVersion + " not found in " + rCoreKey, logger);
-                        }
-                    }
-                    else
-                    {
-                        doLogSetEnvVarInfo("Did not find sub-key Current Version under " + rCoreKey, logger);
-                        return RecurseFirstSubkey(rCoreKey, logger);
-                    }
+                    doLogSetEnvVarInfo("Did not find sub-key Current Version under " + rCoreKey, logger);
+                    return RecurseFirstSubkey(rCoreKey, logger);
                 }
             }
             doLogSetEnvVarInfo(string.Format("InstallPath value of key " + rCoreKey.ToString() + ": {0}",
-               installPath == null ? "null" : installPath), logger);
+               installPath ?? "null"), logger);
             return installPath;
         }
 
         private string RecurseFirstSubkey(IRegistryKey rCoreKey, StringBuilder logger )
         {
-            string[] subKeyNames = rCoreKey.GetSubKeyNames();
+            var subKeyNames = rCoreKey.GetSubKeyNames();
             if (subKeyNames.Length > 0)
             {
                 Array.Sort(subKeyNames);
@@ -539,22 +525,22 @@ namespace RDotNet.NativeLibrary
         private IRegistryKey GetRCoreRegistryKeyWin32(StringBuilder logger)
         {
             CheckPlatformWin32();
-            IRegistryKey rCore = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\R-core");
-            if (rCore == null || rCore.GetRealKey() is null)
+            var rCore = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\R-core");
+            if (rCore?.GetRealKey() is null)
             {
                 doLogSetEnvVarInfo(@"Local machine SOFTWARE\R-core not found - trying current user", logger);
                 rCore = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\R-core");
-                if (rCore == null || rCore.GetRealKey() is null)
+                if (rCore?.GetRealKey() is null)
                     throw new ApplicationException("Windows Registry key 'SOFTWARE\\R-core' not found in HKEY_LOCAL_MACHINE nor HKEY_CURRENT_USER");
             }
             doFoundWinRegKey(rCore, logger);
-            bool is64Bit = Environment.Is64BitProcess;
+            var is64Bit = Environment.Is64BitProcess;
             var subKey = is64Bit ? "R64" : "R";
             var r = rCore.OpenSubKey(subKey);
             if (r == null)
             {
-                throw new ApplicationException(string.Format(
-                   "Windows Registry sub-key '{0}' of key '{1}' was not found", subKey, rCore.ToString()));
+                throw new ApplicationException(
+                    $"Windows Registry sub-key '{subKey}' of key '{rCore}' was not found");
             }
             doFoundWinRegKey(rCore, logger);
             return r;

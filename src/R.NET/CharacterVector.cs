@@ -2,14 +2,13 @@ using RDotNet.Internals;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A collection of strings.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class CharacterVector : Vector<string>
     {
         /// <summary>
@@ -69,7 +68,7 @@ namespace RDotNet
             // To work with ALTREP (introduced in R 3.5.0) and non-ALTREP objects, we will get strings
             // via STRING_ELT, instead of offseting the DataPointer.  This lets R manage the details of
             // ALTREP conversion for us.
-            var objPointer = GetFunction<STRING_ELT>()(this.DangerousGetHandle(), (IntPtr)index);
+            var objPointer = GetFunction<STRING_ELT>()(DangerousGetHandle(), (IntPtr)index);
             if (objPointer == Engine.NaStringPointer)
             {
                 return null;

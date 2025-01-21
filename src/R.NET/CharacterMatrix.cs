@@ -1,14 +1,13 @@
 using RDotNet.Internals;
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A matrix of strings.
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class CharacterMatrix : Matrix<string>
     {
         /// <summary>

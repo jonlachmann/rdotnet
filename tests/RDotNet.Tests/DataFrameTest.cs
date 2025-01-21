@@ -9,7 +9,7 @@ namespace RDotNet
         public void TestIsDataFrameTrue()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var iris = engine.Evaluate("data.frame()");
             Assert.True(iris.IsDataFrame());
         }
@@ -18,7 +18,7 @@ namespace RDotNet
         public void TestIsDataFrameFalse()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var iris = engine.Evaluate("list()");
             Assert.False(iris.IsDataFrame());
         }
@@ -27,7 +27,7 @@ namespace RDotNet
         public void TestCharacterColumnRetrieval()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             SymbolicExpression expression;
 
             engine.Evaluate("x <- data.frame(c1 = c('a', 'b'), stringsAsFactors = FALSE)");
@@ -53,7 +53,7 @@ namespace RDotNet
         public void TestDataFrameFactorColumns()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var biopsy = getBiopsyDataFrame(engine);
             //$ class: Factor w/ 2 levels "benign","malignant": 1 1 1 1 1 2 1 1 1 1 ...
             var factor = biopsy[10].AsFactor();
@@ -104,7 +104,7 @@ namespace RDotNet
         public void TestDataFrameConversionCharacterWithFactors()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
 
             engine.Evaluate("x <- data.frame(c1 = c('a', 'b'), stringsAsFactors = FALSE)");
             var expression = engine.GetSymbol("x");
@@ -126,7 +126,7 @@ namespace RDotNet
         public void TestDataFrameInMemoryCreation()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             IEnumerable[] columns;
             string[] columnNames;
             DataFrame df;
@@ -176,7 +176,7 @@ namespace RDotNet
         public void TestDataElementTwoDimIndex()
         {
             SetUpTest();
-            var engine = this.Engine;
+            var engine = Engine;
             var biopsy = getBiopsyDataFrame(engine);
 
             /*

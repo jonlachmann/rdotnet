@@ -4,16 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// An S4 object
     /// </summary>
-    [DebuggerDisplay(@"SlotCount = {SlotCount}; RObjectType = {Type}")]
+    [DebuggerDisplay("SlotCount = {SlotCount}; RObjectType = {Type}")]
     [DebuggerTypeProxy(typeof(S4ObjectDebugView))]
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
     public class S4Object : SymbolicExpression
     {
         /// <summary>

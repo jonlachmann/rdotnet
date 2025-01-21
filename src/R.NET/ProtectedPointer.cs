@@ -1,10 +1,8 @@
 using RDotNet.Internals;
 using System;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
     internal class ProtectedPointer : IDisposable
     {
         private readonly REngine _engine;

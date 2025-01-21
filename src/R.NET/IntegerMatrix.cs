@@ -2,7 +2,6 @@ using RDotNet.Internals;
 using RDotNet.Utilities;
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
@@ -12,7 +11,7 @@ namespace RDotNet
     /// <remarks>
     /// The minimum value of IntegerVector is different from that of System.Int32 in .NET Framework.
     /// </remarks>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class IntegerMatrix : Matrix<int>
     {
         /// <summary>

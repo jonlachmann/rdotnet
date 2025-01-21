@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
@@ -15,7 +14,7 @@ namespace RDotNet
     /// </summary>
     [DebuggerDisplay(@"ColumnCount = {ColumnCount}; RowCount = {RowCount}; RObjectType = {Type}")]
     [DebuggerTypeProxy(typeof(DataFrameDebugView))]
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public class DataFrame : Vector<DynamicVector>
     {
         private const string RRowNamesSymbolName = "R_RowNamesSymbol";

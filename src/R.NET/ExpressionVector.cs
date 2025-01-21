@@ -1,13 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
     /// <summary>
     /// A vector of S expressions
     /// </summary>
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+
     public class ExpressionVector : Vector<Expression>
     {
         /// <summary>
@@ -26,10 +25,10 @@ namespace RDotNet
         protected override Expression[] GetArrayFast()
         {
             var res = new Expression[Length];
-            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            var useAltRep = Engine.Compatibility == REngine.CompatibilityMode.ALTREP;
             for (var i = 0; i < res.Length; i++)
             {
-                res[i] = (useAltRep ? GetValueAltRep(i) : GetValue(i));
+                res[i] = useAltRep ? GetValueAltRep(i) : GetValue(i);
             }
             return res;
         }
@@ -86,7 +85,7 @@ namespace RDotNet
         /// </summary>
         protected override void SetVectorDirect(Expression[] values)
         {
-            var useAltRep = (Engine.Compatibility == REngine.CompatibilityMode.ALTREP);
+            var useAltRep = Engine.Compatibility == REngine.CompatibilityMode.ALTREP;
             for (var i = 0; i < values.Length; i++)
             {
                 if (useAltRep)

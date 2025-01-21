@@ -1,4 +1,3 @@
-using System.Data;
 using RDotNet.Diagnostics;
 using RDotNet.Internals;
 using System;
@@ -7,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
@@ -17,7 +15,7 @@ namespace RDotNet
     /// <typeparam name="T">The element type.</typeparam>
     [DebuggerDisplay("Length = {Length}; RObjectType = {Type}")]
     [DebuggerTypeProxy(typeof(VectorDebugView<>))]
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+
     public abstract class Vector<T> : SymbolicExpression, IEnumerable<T>
     {
         /// <summary>
@@ -219,17 +217,17 @@ namespace RDotNet
         {
             get
             {
-                var index = getIndex(name);
+                var index = GetIndex(name);
                 return this[index];
             }
             set
             {
-                var index = getIndex(name);
+                var index = GetIndex(name);
                 this[index] = value;
             }
         }
 
-        private int getIndex(string name)
+        private int GetIndex(string name)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name), "indexing a vector by name requires a non-null name argument");

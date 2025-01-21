@@ -3,7 +3,6 @@ using RDotNet.Internals;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 namespace RDotNet
 {
@@ -13,7 +12,7 @@ namespace RDotNet
     /// <typeparam name="T">The element type.</typeparam>
     [DebuggerDisplay("MatrixSize = {RowCount} x {ColumnCount}; RObjectType = {Type}")]
     [DebuggerTypeProxy(typeof(MatrixDebugView<>))]
-    [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+    
     public abstract class Matrix<T> : SymbolicExpression
     {
         /// <summary>
