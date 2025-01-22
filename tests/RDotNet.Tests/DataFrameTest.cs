@@ -70,7 +70,7 @@ namespace RDotNet
 //> head(as.character(biopsy$class))
             //[1] "benign"    "benign"    "benign"    "benign"    "benign"    "malignant"
             //   NOT:
-            //[1] "1"    "1"    "1"    "1"    "1"    "2" 
+            //[1] "1"    "1"    "1"    "1"    "1"    "2"
             checkClassString(factor.AsCharacter().ToArray());
             checkClassString(biopsy[10].AsCharacter().ToArray());
 
@@ -79,7 +79,7 @@ namespace RDotNet
         private static void checkClassString(string[] values)
         {
             Assert.Equal(699, values.Length);
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
                 Assert.Equal("benign", values[i]);
             Assert.Equal("malignant", values[5]);
         }
@@ -91,7 +91,7 @@ namespace RDotNet
             return biopsy;
         }
 
-        //[Fact]
+        [Fact]
         public void TestDataFrameInMemoryCreationTwice()
         {
             // https://rdotnet.codeplex.com/workitem/146
@@ -130,21 +130,21 @@ namespace RDotNet
             IEnumerable[] columns;
             string[] columnNames;
             DataFrame df;
-            createTestDataFrame(engine, out columns, out columnNames, out df);
+            CreateTestDataFrame(engine, out columns, out columnNames, out df);
             checkDataFrameContent(df);
             Assert.Equal(columnNames, df.ColumnNames);
             df = engine.CreateDataFrame(columns, columnNames: null);
             checkDataFrameContent(df);
 
-            string additionalMsg = "https://rdotnet.codeplex.com/workitem/146";
+            const string additionalMsg = "https://rdotnet.codeplex.com/workitem/146";
             ReportFailOnLinux(additionalMsg);
 
-            columns[1] = new int[] { 1, 2, 3, 4, 5, 6, 7 };
+            columns[1] = new[] { 1, 2, 3, 4, 5, 6, 7 };
             // NOTE: on at least one machine, this fails at the first test run with an OutOfMemoryException
             // It is unclear at what level this occurs; if I follow the instructions at http://stackoverflow.com/questions/36014/why-is-net-exception-not-caught-by-try-catch-block
             // and disable "Just my code" the stack trace shows a TargetInvocationException in a NUnit only call stack
 
-            Assert.Throws(typeof(EvaluationException), (() => df = engine.CreateDataFrame(columns, columnNames: null)));
+            Assert.Throws<EvaluationException>(() => df = engine.CreateDataFrame(columns, columnNames: null));
 
             //         try
             //         {
@@ -156,19 +156,19 @@ namespace RDotNet
             //         }
         }
 
-        private static void createTestDataFrame(REngine engine, out IEnumerable[] columns, out string[] columnNames, out DataFrame df)
+        private static void CreateTestDataFrame(REngine engine, out IEnumerable[] columns, out string[] columnNames, out DataFrame df)
         {
-            columns = createTestDfColumns();
+            columns = CreateTestDfColumns();
             columnNames = new[] { "Category", "No.", "Measure" };
             df = engine.CreateDataFrame(columns, columnNames: columnNames);
         }
 
-        private static IEnumerable[] createTestDfColumns()
+        private static IEnumerable[] CreateTestDfColumns()
         {
-            IEnumerable[] columns = new IEnumerable[3];
-            columns[0] = new string[] { "a", "a", "a", "a", "a", "b", "b", "b", "b", "b" };
-            columns[1] = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-            columns[2] = new double[] { 1.1, 2.1, 3.1, 4.1, 5.1, 6.1, 7.1, 8.1, 9.1, 10.1 };
+            var columns = new IEnumerable[3];
+            columns[0] = new[] { "a", "a", "a", "a", "a", "b", "b", "b", "b", "b" };
+            columns[1] = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            columns[2] = new[] { 1.1, 2.1, 3.1, 4.1, 5.1, 6.1, 7.1, 8.1, 9.1, 10.1 };
             return columns;
         }
 
@@ -222,16 +222,16 @@ namespace RDotNet
             IEnumerable[] columns;
             string[] columnNames;
             DataFrame df;
-            createTestDataFrame(engine, out columns, out columnNames, out df);
+            CreateTestDataFrame(engine, out columns, out columnNames, out df);
 
             Assert.Equal("a", df[0, 0]);
             df[0, 0] = "b";
             Assert.Equal("b", df[0, 0]);
             df[0, 0] = "c";
-            Assert.Equal(null, df[0, 0]);
+            Assert.Null(df[0, 0]);
             Assert.Equal("b", df[5, 0]);
             df[5, 0] = null;
-            Assert.Equal(null, df[5, 0]);
+            Assert.Null(df[5, 0]);
         }
 
         private static void checkDataFrameContent(DataFrame df)
@@ -242,11 +242,11 @@ namespace RDotNet
             Assert.Equal("b", cat[5]);
 
             var numbers = df[1].AsInteger();
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
                 Assert.Equal(i + 1, numbers[i]);
 
             var measures = df[2].AsNumeric();
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
                 Assert.Equal(i + 1.1, measures[i]);
         }
     }

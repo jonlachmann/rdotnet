@@ -11,7 +11,7 @@ namespace RDotNet
             SetUpTest();
             var engine = Engine;
             var factor = engine.Evaluate("factor(c('A', 'B', 'A', 'C', 'B'))").AsFactor();
-            Assert.Equal(factor.Length, (5));
+            Assert.Equal(5, factor.Length);
         }
 
         [Fact]
@@ -20,7 +20,7 @@ namespace RDotNet
             SetUpTest();
             var engine = Engine;
             var factor = engine.Evaluate("factor(c('A', 'B', 'A', 'C', 'B'), ordered=TRUE)").AsFactor();
-            Assert.Equal(factor.IsOrdered, true);
+            Assert.True(factor.IsOrdered);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ x
             SetUpTest();
             var engine = Engine;
             var factor = engine.Evaluate("factor(c('A', 'B', 'A', 'C', 'B'), ordered=FALSE)").AsFactor();
-            Assert.Equal(factor.IsOrdered, false);
+            Assert.False(factor.IsOrdered);
         }
 
         [Fact]
@@ -79,7 +79,7 @@ x
         {
             SetUpTest();
             var engine = Engine;
-            var code = "factor(c(rep('T', 5), rep('C', 5), rep('T', 4), rep('C', 5)), levels=c('T', 'C'), labels=c('Treatment', 'Control'))";
+            const string code = "factor(c(rep('T', 5), rep('C', 5), rep('T', 4), rep('C', 5)), levels=c('T', 'C'), labels=c('Treatment', 'Control'))";
             var factor = engine.Evaluate(code).AsFactor();
             var expected = Enumerable.Repeat(Group.Treatment, 5)
                                      .Concat(Enumerable.Repeat(Group.Control, 5))

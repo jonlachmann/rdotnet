@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using RDotNet.Utilities;
 
 namespace RDotNet
 {
@@ -27,7 +28,7 @@ namespace RDotNet
         protected Vector(REngine engine, SymbolicExpressionType type, int length)
             : base(engine, engine.GetFunction<Rf_allocVector>()(type, length))
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
+            ArgumentValidation.ThrowIfNegativeOrZero(length);
             var empty = new byte[length * DataSize];
             Marshal.Copy(empty, 0, DataPointer, empty.Length);
         }

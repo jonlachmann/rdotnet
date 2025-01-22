@@ -11,7 +11,7 @@ namespace RDotNet
     /// <remarks>
     /// The minimum value of IntegerVector is different from that of System.Int32 in .NET Framework.
     /// </remarks>
-    
+
     public class IntegerVector : Vector<int>
     {
         /// <summary>
@@ -75,7 +75,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override int GetValueAltRep(int index)
         {
-            return GetFunction<INTEGER_ELT>()(DangerousGetHandle(), index);
+            return GetFunction<INTEGER_ELT>()(DangerousGetHandle(), (IntPtr)index);
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValueAltRep(int index, int value)
         {
-            GetFunction<SET_INTEGER_ELT>()(DangerousGetHandle(), index, value);
+            GetFunction<SET_INTEGER_ELT>()(DangerousGetHandle(), (IntPtr)index, value);
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace RDotNet
         {
             // by inference from `static SEXP compact_intseq_Duplicate(SEXP x, Rboolean deep)`  in altrep.c
             var res = new int[Length];
-            GetFunction<INTEGER_GET_REGION>()(DangerousGetHandle(), 0, Length, res);
+            GetFunction<INTEGER_GET_REGION>()(DangerousGetHandle(), (IntPtr)0, (IntPtr)Length, res);
             return res;
         }
 

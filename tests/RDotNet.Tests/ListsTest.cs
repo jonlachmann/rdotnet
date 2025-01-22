@@ -12,9 +12,9 @@ namespace RDotNet
             var engine = Engine;
             var pairList = engine.Evaluate("pairlist(a=5)");
             var aList = engine.Evaluate("list(a=5)");
-            bool b = aList.AsList().IsList();
-            Assert.Equal(true, pairList.IsList());
-            Assert.Equal(true, aList.IsList());
+            var b = aList.AsList().IsList();
+            Assert.True(pairList.IsList());
+            Assert.True(aList.IsList());
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace RDotNet
             //  http://stackoverflow.com/questions/33326594/how-can-i-create-named-list-members-object-in-r-net
             var engine = Engine;
             var list = new GenericVector(engine, 2);
-            // odpar <- list(mean = c(-1.5, 0, 1.5), var = c(0.5, 0.6, 0.8)) 
+            // odpar <- list(mean = c(-1.5, 0, 1.5), var = c(0.5, 0.6, 0.8))
             list[0] = engine.CreateNumericVector(new[] { -1.5, 0, 1.5 });
             list[1] = engine.CreateNumericVector(new[] { 0.5, 0.6, 0.8 });
             list.SetNames("mean", "var");

@@ -1,4 +1,5 @@
 using System;
+using RDotNet.Utilities;
 
 namespace RDotNet
 {
@@ -52,7 +53,7 @@ namespace RDotNet
         /// <param name="index">The index.</param>
         public DataFrameColumnAttribute(int index)
         {
-            ArgumentOutOfRangeException.ThrowIfNegative(index);
+            ArgumentValidation.ThrowIfNegative(index);
             name = null;
             this.index = index;
         }

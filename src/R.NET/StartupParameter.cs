@@ -2,6 +2,7 @@ using RDotNet.Internals;
 using RDotNet.Internals.Windows;
 using System;
 using System.Runtime.InteropServices;
+using RDotNet.Utilities;
 
 namespace RDotNet
 {
@@ -116,7 +117,7 @@ namespace RDotNet
             get => Start.Common.vsize.ToUInt64();
             set
             {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                ArgumentValidation.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
                 Start.Common.vsize = new UIntPtr(value);
             }
         }
@@ -129,7 +130,7 @@ namespace RDotNet
             get => Start.Common.nsize.ToUInt64();
             set
             {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                ArgumentValidation.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
                 Start.Common.nsize = new UIntPtr(value);
             }
         }
@@ -142,7 +143,7 @@ namespace RDotNet
             get => Start.Common.max_vsize.ToUInt64();
             set
             {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                ArgumentValidation.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
                 Start.Common.max_vsize = new UIntPtr(value);
             }
         }
@@ -155,7 +156,7 @@ namespace RDotNet
             get => Start.Common.max_nsize.ToUInt64();
             set
             {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                ArgumentValidation.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
                 Start.Common.max_nsize = new UIntPtr(value);
             }
         }
@@ -168,7 +169,7 @@ namespace RDotNet
             get => Start.Common.ppsize.ToUInt64();
             set
             {
-                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
+                ArgumentValidation.ThrowIfGreaterThan(value, EnvironmentDependentMaxSize);
                 Start.Common.ppsize = new UIntPtr(value);
             }
         }

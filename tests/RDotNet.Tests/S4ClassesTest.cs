@@ -21,7 +21,7 @@ namespace RDotNet
                 new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
                 t1["x"].AsInteger().ToArray());
             Assert.Equal(
-                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
                 t1["x"].AsNumeric().ToArray());
 
             var y = t1["y"].AsNumeric().ToArray();

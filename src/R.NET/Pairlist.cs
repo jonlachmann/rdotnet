@@ -33,13 +33,11 @@ namespace RDotNet
         /// <returns>The enumerator</returns>
         public IEnumerator<Symbol> GetEnumerator()
         {
-            if (Count != 0)
+            if (Count == 0) yield break;
+            var sexprecType = Engine.GetSEXPRECType();
+            for (dynamic sexp = GetInternalStructure(); sexp.sxpinfo.type != SymbolicExpressionType.Null; sexp = Convert.ChangeType(Marshal.PtrToStructure(sexp.listsxp.cdrval, sexprecType), sexprecType))
             {
-                var sexprecType = Engine.GetSEXPRECType();
-                for (dynamic sexp = GetInternalStructure(); sexp.sxpinfo.type != SymbolicExpressionType.Null; sexp = Convert.ChangeType(Marshal.PtrToStructure(sexp.listsxp.cdrval, sexprecType), sexprecType))
-                {
-                    yield return new Symbol(Engine, sexp.listsxp.tagval);
-                }
+                yield return new Symbol(Engine, sexp.listsxp.tagval);
             }
         }
 

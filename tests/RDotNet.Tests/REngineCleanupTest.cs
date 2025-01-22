@@ -22,10 +22,10 @@ namespace RDotNet
             var engine = Engine;
 
             var s = engine.Evaluate("search()").AsCharacter().ToArray();
-            Assert.False(s.Contains("package:lattice"));
-            Assert.False(s.Contains("package:Matrix"));
-            Assert.False(s.Contains("package:MASS"));
-            Assert.False(s.Contains("biopsy"));
+            Assert.DoesNotContain("package:lattice", s);
+            Assert.DoesNotContain("package:Matrix", s);
+            Assert.DoesNotContain("package:MASS", s);
+            Assert.DoesNotContain("biopsy", s);
 
             engine.ClearGlobalEnvironment();
             engine.Evaluate("library(lattice)");
@@ -35,18 +35,18 @@ namespace RDotNet
             engine.Evaluate("attach(biopsy)");
             s = engine.Evaluate("search()").AsCharacter().ToArray();
 
-            Assert.True(s.Contains("package:lattice"));
-            Assert.True(s.Contains("package:Matrix"));
-            Assert.True(s.Contains("package:MASS"));
-            Assert.True(s.Contains("biopsy"));
+            Assert.Contains("package:lattice", s);
+            Assert.Contains("package:Matrix", s);
+            Assert.Contains("package:MASS", s);
+            Assert.Contains("biopsy", s);
 
             engine.ClearGlobalEnvironment(detachPackages: true);
 
             s = engine.Evaluate("search()").AsCharacter().ToArray();
-            Assert.False(s.Contains("package:lattice"));
-            Assert.False(s.Contains("package:Matrix"));
-            Assert.False(s.Contains("package:MASS"));
-            Assert.False(s.Contains("biopsy"));
+            Assert.DoesNotContain("package:lattice", s);
+            Assert.DoesNotContain("package:Matrix", s);
+            Assert.DoesNotContain("package:MASS", s);
+            Assert.DoesNotContain("biopsy", s);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace RDotNet
             CheckBothArrayConversions(vec, expected);
 
             vec = engine.Evaluate("c(1.1,NA,2.2)").AsNumeric();
-            CheckBothArrayConversions(vec, [1.1, double.NaN, 2.2]);
+            CheckBothArrayConversions(vec, new[] { 1.1, double.NaN, 2.2 });
 
             // Test a large data set: I just cannot believe how faster things are...
             engine.Evaluate("x <- 1:1e7 * 1.1");
@@ -70,10 +70,10 @@ namespace RDotNet
             // Test vectors with non-sequential values.  This should not go through ALTREP.
             engine.Evaluate("y <- c(10, 5, 73, 8)");
             var vec = engine.GetSymbol("y").AsInteger();
-            CheckBothArrayConversions(vec, [10, 5, 73, 8]);
+            CheckBothArrayConversions(vec, new[] { 10, 5, 73, 8 });
 
             vec = engine.Evaluate("as.integer(c(1,NA,2))").AsInteger();
-            CheckBothArrayConversions(vec, [1, Int32.MinValue, 2]);
+            CheckBothArrayConversions(vec, new[] { 1, Int32.MinValue, 2 });
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace RDotNet
             var engine = Engine;
             engine.Evaluate("y <- as.integer(c(10, 5, 73, NA, 8))");
             var vec = engine.GetSymbol("y").AsCharacter();
-            CheckBothArrayConversions(vec, ["10", "5", "73", null, "8"]);
+            CheckBothArrayConversions(vec, new[] { "10", "5", "73", null, "8" });
 
             engine.Evaluate("x <- 10000:1000000");
             var expected = GenArrayCharacter(10000, 1000000);
@@ -96,7 +96,7 @@ namespace RDotNet
             var engine = Engine;
             engine.Evaluate("y <- as.logical(c(FALSE, NA, TRUE, NA, FALSE))");
             var vec = engine.GetSymbol("y").AsCharacter();
-            CheckBothArrayConversions(vec, ["FALSE", null, "TRUE", null, "FALSE"]);
+            CheckBothArrayConversions(vec, new[] { "FALSE", null, "TRUE", null, "FALSE" });
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace RDotNet
             var engine = Engine;
             engine.Evaluate("y <- as.numeric(c(NA, 1.1, 2.2, 3.333, 4.4))");
             var vec = engine.GetSymbol("y").AsCharacter();
-            CheckBothArrayConversions(vec, [null, "1.1", "2.2", "3.333", "4.4"]);
+            CheckBothArrayConversions(vec, new[] { null, "1.1", "2.2", "3.333", "4.4" });
         }
 
         [Fact]
@@ -118,7 +118,7 @@ namespace RDotNet
             var vec = engine.GetSymbol("x").AsLogical();
             CheckBothArrayConversions(vec, expected);
             vec = engine.Evaluate("c(TRUE,NA,FALSE)").AsLogical();
-            CheckBothArrayConversions(vec, [true, true, false]);
+            CheckBothArrayConversions(vec, new[] { true, true, false });
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace RDotNet
             var vec = engine.GetSymbol("x").AsComplex();
             CheckBothArrayConversions(vec, expected);
             vec = engine.Evaluate("c(1+2i,NA,3+4i)").AsComplex();
-            CheckBothArrayConversions(vec, [new Complex(1, 2), new Complex(double.NaN, 0), new Complex(3, 4)]);
+            CheckBothArrayConversions(vec, new[] { new Complex(1, 2), new Complex(double.NaN, 0), new Complex(3, 4) });
         }
 
         private static void CheckBothArrayConversions<T>(Vector<T> vec, T[] expected)

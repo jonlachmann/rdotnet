@@ -293,7 +293,7 @@ sep=''))
 
             Device.Initialize();
             engine.Evaluate("cat(\"double quote delimiter (\\\") with # and \\\" and \' \") # ; cat(' this # is removed')");
-            Assert.Equal("""double quote delimiter (") with # and " and ' """, Device.GetString());
+            Assert.Equal(@"double quote delimiter ("") with # and "" and ' ", Device.GetString());
 
             Device.Initialize();
             engine.Evaluate("cat('### Some markdown with multiple hashtags') # ; cat(' this # is removed')");

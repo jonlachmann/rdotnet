@@ -22,7 +22,7 @@ namespace RDotNet
             var absValues = abs.Invoke(engine.CreateNumericVector(values)).AsNumeric().ToArray();
 
             Assert.Equal(values.Length, absValues.Length);
-            CheckArrayEqual([2, 1, 0, 1, 2], absValues);
+            CheckArrayEqual(new double[] { 2, 1, 0, 1, 2 }, absValues);
         }
 
         [Fact]
@@ -41,14 +41,14 @@ namespace RDotNet
             //dpois(x, lambda, log = FALSE)
             // let's test how arguments with default values is treated.
             var x = engine.CreateNumericVector(values);
-            var lambda = engine.CreateNumericVector([0.9]);
-            var log = engine.CreateLogicalVector([false]);
+            var lambda = engine.CreateNumericVector(new[] { 0.9 });
+            var log = engine.CreateLogicalVector(new[] { false });
             // just check that is passes without exceptions
             var distVal = dpois.Invoke(x, lambda, log);
 
             distVal = dpois.Invoke(x, lambda);
             var signif = engine.GetSymbol("signif").AsFunction();
-            var signifValues = signif.Invoke(distVal, engine.CreateIntegerVector([2])).AsNumeric().ToArray();
+            var signifValues = signif.Invoke(distVal, engine.CreateIntegerVector(new[] { 2 })).AsNumeric().ToArray();
 
             var expected = new[] { 4.1e-01, 3.7e-01, 1.6e-01, 4.9e-02, 1.1e-02, 2.0e-03, 3.0e-04, 3.9e-05 };
             CheckArrayEqual(expected, signifValues);
@@ -119,7 +119,7 @@ setMethod( 'f', 'numeric', function(x, ...) { paste( 'f.numeric called:', printP
             checkInvoke(f.InvokeNamed(tc("x", 1), tc("c", "3"), tc("b", "2")), "f.integer called:  c=3; b=2");
 
             // .NET Framework array to R vector.
-            var group1 = engine.CreateNumericVector([30.02, 29.99, 30.11, 29.97, 30.01, 29.99]);
+            var group1 = engine.CreateNumericVector(new[] { 30.02, 29.99, 30.11, 29.97, 30.01, 29.99 });
             engine.SetSymbol("group1", group1);
             // Direct parsing from R script.
             var group2 = engine.Evaluate("group2 <- c(29.89, 29.93, 29.72, 29.98, 30.02, 29.98)").AsNumeric();

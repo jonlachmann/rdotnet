@@ -71,7 +71,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override byte GetValueAltRep(int index)
         {
-            return GetFunction<RAW_ELT>()(DangerousGetHandle(), index);
+            return GetFunction<RAW_ELT>()(DangerousGetHandle(), (IntPtr)index);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValueAltRep(int index, byte value)
         {
-            GetFunction<SET_RAW_ELT>()(DangerousGetHandle(), index, value);
+            GetFunction<SET_RAW_ELT>()(DangerousGetHandle(), (IntPtr)index, value);
         }
 
         /// <summary>

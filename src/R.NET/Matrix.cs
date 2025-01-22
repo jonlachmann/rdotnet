@@ -3,6 +3,7 @@ using RDotNet.Internals;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using RDotNet.Utilities;
 
 namespace RDotNet
 {
@@ -12,7 +13,7 @@ namespace RDotNet
     /// <typeparam name="T">The element type.</typeparam>
     [DebuggerDisplay("MatrixSize = {RowCount} x {ColumnCount}; RObjectType = {Type}")]
     [DebuggerTypeProxy(typeof(MatrixDebugView<>))]
-    
+
     public abstract class Matrix<T> : SymbolicExpression
     {
         /// <summary>
@@ -25,8 +26,8 @@ namespace RDotNet
         protected Matrix(REngine engine, SymbolicExpressionType type, int rowCount, int columnCount)
             : base(engine, engine.GetFunction<Rf_allocMatrix>()(type, rowCount, columnCount))
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rowCount);
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(columnCount);
+            ArgumentValidation.ThrowIfNegativeOrZero(rowCount);
+            ArgumentValidation.ThrowIfNegativeOrZero(columnCount);
             var empty = new byte[rowCount * columnCount * DataSize];
             Marshal.Copy(empty, 0, DataPointer, empty.Length);
         }

@@ -23,32 +23,17 @@ namespace RDotNet
         /// <summary> Gets the current user.</summary>
         ///
         /// <value> The current user.</value>
-        public IRegistryKey CurrentUser
-        {
-            get
-            {
-                return currentUser;
-            }
-        }
+        public IRegistryKey CurrentUser => currentUser;
 
         /// <summary> Gets the local machine.</summary>
         ///
         /// <value> The local machine.</value>
-        public IRegistryKey LocalMachine
-        {
-            get
-            {
-                return localMachine;
-            }
-        }
+        public IRegistryKey LocalMachine => localMachine;
 
         public MockRegistry(string localMachineTestReg, string currentUserTestReg = null)
         {
             localMachine = MockRegistryKey.Parse(localMachineTestReg);
-            if(string.IsNullOrEmpty(currentUserTestReg))
-                currentUser = null; 
-            else 
-                currentUser = MockRegistryKey.Parse(currentUserTestReg);
+            currentUser = string.IsNullOrEmpty(currentUserTestReg) ? null : MockRegistryKey.Parse(currentUserTestReg);
         }
     }
 
@@ -63,18 +48,18 @@ namespace RDotNet
         public MockRegistryKey(string fullKey)
         {
             var s = CreateStack(fullKey);
-            string k = s.Pop(); // HKEY_LOCAL_MACHINE
+            var k = s.Pop(); // HKEY_LOCAL_MACHINE
             ShortName = k;
-            if(s.Count() > 0)
+            if(s.Count != 0)
                 subKeys.Add(new MockRegistryKey(s));
         }
 
         public MockRegistryKey(Stack<string> s)
         {
-            if (s.Count() == 0) throw new ArgumentException("must be at least one item in the stack of keys");
-            string k = s.Pop();
+            if (s.Count == 0) throw new ArgumentException("must be at least one item in the stack of keys");
+            var k = s.Pop();
             ShortName = k;
-            if (s.Count() > 0)
+            if (s.Count > 0)
                 subKeys.Add(new MockRegistryKey(s));
         }
 
@@ -130,12 +115,11 @@ namespace RDotNet
             //[HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R64]
             //'InstallPath'='C:\\Program Files\\R\\R-3.3.3'
             //'Current Version'='3.3.3'
-            List<MockRegistryKey> topKeys = new List<MockRegistryKey>();
+            var topKeys = new List<MockRegistryKey>();
             var lines = localMachineTestReg.Split(new string[] { Environment.NewLine, "\n" }, StringSplitOptions.RemoveEmptyEntries);
             string currentKey = null;
-            for (int i = 0; i < lines.Length; i++)
+            foreach (var line in lines)
             {
-                var line = lines[i];
                 if (line.StartsWith("["))
                 {
                     currentKey = line.Replace("[", "").Replace("]", ""); // so left with HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R64
@@ -145,16 +129,13 @@ namespace RDotNet
                 {
                     var x = line.Trim();
                     if (x.Length == 0) continue;
-                    else
-                    {
-                        MockRegistryKey k = Find(topKeys, currentKey);
-                        //'InstallPath'='C:\\Program Files\\R\\R-3.3.3'
-                        var keyVal = x.Replace("'", "").Split('=');
-                        k.AddKeyVal(keyVal[0], keyVal[1]);
-                    }
+                    var k = Find(topKeys, currentKey);
+                    //'InstallPath'='C:\\Program Files\\R\\R-3.3.3'
+                    var keyVal = x.Replace("'", "").Split('=');
+                    k.AddKeyVal(keyVal[0], keyVal[1]);
                 }
             }
-            if (topKeys.Count() != 1)
+            if (topKeys.Count != 1)
                 throw new Exception("");
             return topKeys[0];
         }
@@ -167,7 +148,7 @@ namespace RDotNet
         private static Stack<string> CreateStack(string fullKey)
         {
             // fullKey is expected to be something like: HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R64
-            string[] kItems = fullKey.Split('\\');
+            var kItems = fullKey.Split('\\');
             Array.Reverse(kItems);
             return new Stack<string>(kItems);
         }
@@ -175,12 +156,12 @@ namespace RDotNet
         private static void Populate(string fullKey, List<MockRegistryKey> topKeys)
         {
             // fullKey is expected to be something like: HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R64
-            Stack<string> s = CreateStack(fullKey);
-            if (s.Count() == 0) return;
-            string k = s.Pop(); // HKEY_LOCAL_MACHINE
+            var s = CreateStack(fullKey);
+            if (!s.Any()) return;
+            var k = s.Pop(); // HKEY_LOCAL_MACHINE
             var existing = topKeys.Where(m => m.ShortName == k);
             MockRegistryKey topKey = null;
-            if (existing.Count() > 0)
+            if (existing.Any())
             {
                 topKey = existing.First();
                 topKey.AddSubKeys(s);
@@ -194,15 +175,12 @@ namespace RDotNet
 
         private void AddSubKeys(Stack<string> s)
         {
-            if (s.Count() == 0) return ;
-            string k = s.Pop();
+            if (s.Count == 0) return ;
+            var k = s.Pop();
             var kk = Find(k);
             if (kk == null)
             {
-                if (s.Count() != 0)
-                    subKeys.Add(new MockRegistryKey(s));
-                else
-                    subKeys.Add(new MockRegistryKey(k));
+                subKeys.Add(s.Count != 0 ? new MockRegistryKey(s) : new MockRegistryKey(k));
             }
             else
                 kk.AddSubKeys(s);
@@ -211,34 +189,33 @@ namespace RDotNet
         private MockRegistryKey Find(string shortSubkeyName)
         {
             var v = from x in subKeys where x.ShortName == shortSubkeyName select x;
-            if (v.Count() < 1)
-                return null;
-            if (v.Count() > 1)
-                throw new Exception("More than one key found for: " + shortSubkeyName);
-            return v.First();
+            return v.Count() switch
+            {
+                < 1 => null,
+                > 1 => throw new Exception("More than one key found for: " + shortSubkeyName),
+                _ => v.First()
+            };
         }
 
         private static MockRegistryKey Find(List<MockRegistryKey> topKeys, string fullKey)
         {
-            Stack<string> s = CreateStack(fullKey);
-            if (s.Count() == 0) return null;
-            string k = s.Pop(); // HKEY_LOCAL_MACHINE
+            var s = CreateStack(fullKey);
+            if (!s.Any()) return null;
+            var k = s.Pop(); // HKEY_LOCAL_MACHINE
             var existing = topKeys.Where(m => m.ShortName == k);
             MockRegistryKey topKey = null;
-            if (existing.Count() > 0) topKey = existing.First();
-            if (s.Count() == 0) return topKey;
-            else return topKey.Find(s);
+            if (existing.Any()) topKey = existing.First();
+            return !s.Any() ? topKey : topKey.Find(s);
         }
 
         private MockRegistryKey Find(Stack<string> s)
         {
-            if (s.Count() == 0) return null;
-            string k = s.Pop();
+            if (!s.Any()) return null;
+            var k = s.Pop();
             var existing = subKeys.Where(m => m.ShortName == k);
             MockRegistryKey topKey = null;
             if (existing.Count() > 0) topKey = existing.First();
-            if (s.Count() == 0) return topKey;
-            else return topKey.Find(s);
+            return !s.Any() ? topKey : topKey.Find(s);
         }
 
     }
@@ -249,17 +226,15 @@ namespace RDotNet
         [Fact(Skip = "Cannot run this in a batch with the new singleton pattern")] // Cannot run this in a batch with the new singleton pattern.
         public void TestInitParams()
         {
-            MockDevice device = new MockDevice();
+            var device = new MockDevice();
             REngine.SetEnvironmentVariables();
-            using (var engine = REngine.GetInstance())
-            {
-                ulong maxMemSize = 128 * 1024 * 1024;
-                StartupParameter parameter = new StartupParameter() {
-                    MaxMemorySize = maxMemSize,
-                };
-                engine.Initialize(parameter: parameter, device: device);
-                Assert.Equal(engine.Evaluate("memory.limit()").AsNumeric()[0], 128.0);
-            }
+            using var engine = REngine.GetInstance();
+            const ulong maxMemSize = 128 * 1024 * 1024;
+            var parameter = new StartupParameter() {
+                MaxMemorySize = maxMemSize,
+            };
+            engine.Initialize(parameter: parameter, device: device);
+            Assert.Equal(128.0, engine.Evaluate("memory.limit()").AsNumeric()[0]);
         }
 
         private NativeUtility createTestRegistryUtil(bool realRegistry = true)
@@ -268,7 +243,7 @@ namespace RDotNet
                 return new NativeUtility();
             else
             {
-                string localMachineTestReg = @"
+                var localMachineTestReg = @"
 [HKEY_LOCAL_MACHINE\SOFTWARE\R-core]
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R]
@@ -310,10 +285,10 @@ namespace RDotNet
         [Fact]
         public void TestFindRBinPath()
         {
-            string rLibPath = createTestRegistryUtil().FindRPath();
+            var rLibPath = createTestRegistryUtil().FindRPath();
             var files = Directory.GetFiles(rLibPath);
             var fnmatch = files.Where(fn => fn.ToLower() == Path.Combine(rLibPath.ToLower(), NativeUtility.GetRLibraryFileName().ToLower()));
-            Assert.Equal(1, fnmatch.Count());
+            Assert.Single(fnmatch);
         }
 
         [Fact(Skip = "Fails to pass at 2020-10 on all platforms, but this appears not to test anything anymore really. Review.")]
@@ -322,35 +297,34 @@ namespace RDotNet
 
             IRegistryKey rCore;
             // 2020-10 I lost sight of what this test was for. Causes issues on Linux, not sure why and too hard to debug against other priorities.
-            if (NativeUtility.IsWin32NT)
-            {
-                var w = new WindowsRegistry();
-                rCore = w.LocalMachine.OpenSubKey(@"SOFTWARE\R-core");
+            if (!NativeUtility.IsWin32NT) return;
+            var w = new WindowsRegistry();
+            rCore = w.LocalMachine.OpenSubKey(@"SOFTWARE\R-core");
 
 
-                string localMachineTestReg = @"
+            var localMachineTestReg = @"
     [HKEY_LOCAL_MACHINE\SOFTWARE\R-core]
 
     [HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R]
     'InstallPath'='C:\Program Files\R\R-3.3.3'
     'Current Version'='3.3.3'
     ";
-                var reg = new MockRegistry(localMachineTestReg);
-                var lm = reg.LocalMachine;
-                //var sk = lm.GetSubKeyNames();
-                rCore = lm.OpenSubKey(@"SOFTWARE\R-core");
-                var valNames = rCore.GetValueNames();
-                Assert.Equal(valNames.Length, 0);
+            var reg = new MockRegistry(localMachineTestReg);
+            var lm = reg.LocalMachine;
+            //var sk = lm.GetSubKeyNames();
+            rCore = lm.OpenSubKey(@"SOFTWARE\R-core");
+            var valNames = rCore.GetValueNames();
+            Assert.Empty(valNames);
 
-                Assert.Equal(rCore.GetSubKeyNames().Length, 1);
-                Assert.Equal(rCore.GetSubKeyNames()[0], "R");
-                var R = rCore.OpenSubKey(@"R");
-                Assert.Equal(R.GetSubKeyNames().Length, 0);
-                Assert.Equal(R.GetValueNames().Length, 2);
-                Assert.Equal(R.GetValue("InstallPath"), "C:\\Program Files\\R\\R-3.3.3");
-                Assert.Equal(R.GetValue("Current Version"), "3.3.3");
+            Assert.Single(rCore.GetSubKeyNames());
+            Assert.Equal("R", rCore.GetSubKeyNames()[0]);
+            var r = rCore.OpenSubKey(@"R");
+            Assert.Empty(r.GetSubKeyNames());
+            Assert.Equal(2, r.GetValueNames().Length);
+            Assert.Equal(r.GetValue("InstallPath"), "C:\\Program Files\\R\\R-3.3.3");
+            Assert.Equal(r.GetValue("Current Version"), "3.3.3");
 
-                localMachineTestReg = @"
+            localMachineTestReg = @"
     [HKEY_LOCAL_MACHINE\SOFTWARE\R-core\R\R64]
     'InstallPath'='C:\Program Files\Microsoft\R Client\R_SERVER\'
     'Current Version'='3.2.2.803'
@@ -359,24 +333,23 @@ namespace RDotNet
     'InstallPath'='C:\Program Files\Microsoft\R Client\R_SERVER\'
     ";
 
-                reg = new MockRegistry(localMachineTestReg);
-                lm = reg.LocalMachine;
-                rCore = lm.OpenSubKey(@"SOFTWARE\R-core");
-                Assert.Equal(rCore.GetValueNames().Length, 0);
+            reg = new MockRegistry(localMachineTestReg);
+            lm = reg.LocalMachine;
+            rCore = lm.OpenSubKey(@"SOFTWARE\R-core");
+            Assert.Empty(rCore.GetValueNames());
 
-                Assert.Equal(rCore.GetSubKeyNames().Length, 1);
-                Assert.Equal(rCore.GetSubKeyNames()[0], "R");
-                R = rCore.OpenSubKey(@"R");
-                Assert.Equal(R.GetSubKeyNames().Length, 1);
+            Assert.Single(rCore.GetSubKeyNames());
+            Assert.Equal("R", rCore.GetSubKeyNames()[0]);
+            r = rCore.OpenSubKey(@"R");
+            Assert.Single(r.GetSubKeyNames());
 
-                var R64 = lm.OpenSubKey(@"SOFTWARE\R-core\R\R64");
+            var R64 = lm.OpenSubKey(@"SOFTWARE\R-core\R\R64");
 
-                Assert.Equal(R64.GetSubKeyNames().Length, 1);
-                Assert.Equal(R64.GetValueNames().Length, 2);
+            Assert.Single(R64.GetSubKeyNames());
+            Assert.Equal(2, R64.GetValueNames().Length);
 
-                Assert.Equal(R64.GetValue("InstallPath"), @"C:\Program Files\Microsoft\R Client\R_SERVER\");
-                Assert.Equal(R64.GetValue("Current Version"), "3.2.2.803");
-            }
+            Assert.Equal(R64.GetValue("InstallPath"), @"C:\Program Files\Microsoft\R Client\R_SERVER\");
+            Assert.Equal(R64.GetValue("Current Version"), "3.2.2.803");
         }
 
         [Fact]
@@ -394,21 +367,21 @@ namespace RDotNet
         [Fact(Skip = "This still does not pass on Travis CI sourcing pkgs from https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40")]
         public void TestFindRHomePath()
         {
-            string rHomePath = createTestRegistryUtil().FindRHome();
+            var rHomePath = createTestRegistryUtil().FindRHome();
             var files = Directory.GetDirectories(rHomePath);
             // Note differences in setups:
-            // A local R installation has these folders; 
-            // modules  lib  share  etc  doc  library  bin  include  
+            // A local R installation has these folders;
+            // modules  lib  share  etc  doc  library  bin  include
             // however on Travis CI sourcing from https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/
             // bin  COPYING  etc  lib	library  modules  site-library	SVN-REVISION
             var fnmatch = files.Where(fn => Path.GetFileName(fn) == "library");
-            Assert.Equal(1, fnmatch.Count());
+            Assert.Single(fnmatch);
             fnmatch = files.Where(fn => Path.GetFileName(fn) == "modules");
-            Assert.Equal(1, fnmatch.Count());
+            Assert.Single(fnmatch);
             fnmatch = files.Where(fn => Path.GetFileName(fn) == "etc");
-            Assert.Equal(1, fnmatch.Count());
+            Assert.Single(fnmatch);
             fnmatch = files.Where(fn => Path.GetFileName(fn) == "lib");
-            Assert.Equal(1, fnmatch.Count());
+            Assert.Single(fnmatch);
             // Following fails on the Travis CI machine
             // fnmatch = Directory.GetDirectories(fnmatch.First()).Where(fn => Path.GetFileName(fn) == "base");
             // Assert.Equal(1, fnmatch.Count());
@@ -426,7 +399,7 @@ namespace RDotNet
         [Fact]
         public void TestUsingDefaultRPackages()
         {
-            // This test was designed to look at a symptom observed alongside the issue https://github.com/rdotnet/rdotnet/issues/127  
+            // This test was designed to look at a symptom observed alongside the issue https://github.com/rdotnet/rdotnet/issues/127
             SetUpTest();
             var engine = Engine;
             var se = engine.Evaluate("set.seed");
@@ -439,9 +412,9 @@ namespace RDotNet
 
             string[] expected = { "base", "methods", "utils", "grDevices", "graphics", "stats" };
             var loadedDlls = engine.Evaluate("getLoadedDLLs()").AsList();
-            string[] dllnames = loadedDlls.Select(x => x.AsCharacter().ToArray()[0]).ToArray();
+            var dllnames = loadedDlls.Select(x => x.AsCharacter().ToArray()[0]).ToArray();
 
-            IEnumerable<string> query = from x in expected.Intersect(dllnames)
+            var query = from x in expected.Intersect(dllnames)
                                         select x;
 
             Assert.Equal(expected, query.ToArray());

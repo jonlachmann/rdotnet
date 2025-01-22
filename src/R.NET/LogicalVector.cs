@@ -8,7 +8,7 @@ namespace RDotNet
     /// <summary>
     /// A collection of Boolean values.
     /// </summary>
-    
+
     public class LogicalVector : Vector<bool>
     {
         /// <summary>
@@ -61,7 +61,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override bool GetValueAltRep(int index)
         {
-            var data = GetFunction<LOGICAL_ELT>()(DangerousGetHandle(), index);
+            var data = GetFunction<LOGICAL_ELT>()(DangerousGetHandle(), (IntPtr)index);
             return Convert.ToBoolean(data);
         }
 
@@ -87,7 +87,7 @@ namespace RDotNet
         protected override void SetValueAltRep(int index, bool value)
         {
             var data = Convert.ToInt32(value);
-            GetFunction<SET_LOGICAL_ELT>()(DangerousGetHandle(), index, data);
+            GetFunction<SET_LOGICAL_ELT>()(DangerousGetHandle(), (IntPtr)index, data);
         }
 
         /// <summary>

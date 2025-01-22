@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -17,8 +18,8 @@ public class RuntimeDiagnostics
     public RuntimeDiagnostics(REngine engine)
     {
         this.engine = engine;
-        Types = [];
-        Sizes = [];
+        Types = new string[0];
+        Sizes = new int[0];
         What = "";
         Operation = "";
         Tag = "";
@@ -71,8 +72,8 @@ public class RuntimeDiagnostics
         var time = measures.Select(x => x.Duration).ToArray();
         var type = measures.Select(x => x.Type).ToArray();
         var what = measures.Select(x => x.What).ToArray();
-        return engine.CreateDataFrame([size, ops, tags, time, type, what], ["Size", "Operation", "Tag", "Duration", "Type", "What"
-        ]);
+        return engine.CreateDataFrame(new IEnumerable[] { size, ops, tags, time, type, what },
+            new[] { "Size", "Operation", "Tag", "Duration", "Type", "What" });
     }
 
     public string PrintRuntimeOperation(Measurement m)

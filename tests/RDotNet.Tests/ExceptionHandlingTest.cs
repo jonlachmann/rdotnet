@@ -11,7 +11,7 @@ namespace RDotNet
             SetUpTest();
             // Check that https://rdotnet.codeplex.com/workitem/70 does not occur; in particular worth testing on CentOS according to issue reporter.
             string v = null;
-            Assert.Throws(typeof(NullReferenceException), () => { var t = v.ToString(); });            
+            Assert.Throws<NullReferenceException>(() => { var t = v.ToString(); });
         }
 
         [Fact]

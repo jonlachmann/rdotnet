@@ -12,11 +12,11 @@ namespace RDotNet
             var engine = Engine;
             var iris = engine.Evaluate("iris").AsDataFrame();
             var row = iris.GetRow<IrisData>(0);
-            Assert.Equal(row.Species, (Iris.setosa));
+            Assert.Equal(Iris.setosa, row.Species);
             row = iris.GetRow<IrisData>(50);
-            Assert.Equal(row.Species, (Iris.versicolor));
+            Assert.Equal(Iris.versicolor, row.Species);
             row = iris.GetRow<IrisData>(100);
-            Assert.Equal(row.Species, (Iris.virginica));
+            Assert.Equal(Iris.virginica, row.Species);
         }
 
         [Fact]
@@ -26,7 +26,7 @@ namespace RDotNet
             var engine = Engine;
             var iris = engine.Evaluate("iris").AsDataFrame();
             var counts = iris.GetRows<IrisData>().GroupBy(data => data.Species).Select(group => group.Count());
-            Assert.Equal(counts, (new[] { 50, 50, 50 }));
+            Assert.Equal(counts, new[] { 50, 50, 50 });
         }
 
         // Was not behaving properly. Disabling the support for "dynamic" until investigation. Too dangerous.

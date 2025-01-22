@@ -944,7 +944,7 @@ namespace RDotNet
             var symbol = DangerousGetHandle("R_Visible");
             // If the R_Visible symbol is not exported by the current R engine (happens on R-2.14.1), then just return 'true'
             // https://github.com/BlueMountainCapital/FSharpRProvider/pull/152
-            if (symbol == 0) return true;
+            if (symbol == (IntPtr)0) return true;
             var value = Marshal.ReadInt32(symbol);
             var result = Convert.ToBoolean(value);
             return result;

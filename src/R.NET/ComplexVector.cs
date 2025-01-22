@@ -10,7 +10,7 @@ namespace RDotNet
     /// <summary>
     /// A collection of complex numbers.
     /// </summary>
-    
+
     public class ComplexVector : Vector<Complex>
     {
         /// <summary>
@@ -65,7 +65,7 @@ namespace RDotNet
         /// <returns>The element at the specified index.</returns>
         protected override Complex GetValueAltRep(int index)
         {
-            var data = GetFunction<COMPLEX_ELT>()(DangerousGetHandle(), index);
+            var data = GetFunction<COMPLEX_ELT>()(DangerousGetHandle(), (IntPtr)index);
             return new Complex(data.r, data.i);
         }
 
@@ -91,7 +91,7 @@ namespace RDotNet
         /// <param name="value">The value to set</param>
         protected override void SetValueAltRep(int index, Complex value)
         {
-            GetFunction<SET_COMPLEX_ELT>()(DangerousGetHandle(), index,
+            GetFunction<SET_COMPLEX_ELT>()(DangerousGetHandle(), (IntPtr)index,
                         RTypesUtil.SerializeComplexToRComplex(value));
         }
 

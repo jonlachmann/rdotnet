@@ -7,7 +7,7 @@ namespace RDotNet
     [Collection("R.NET unit tests")]
     public class REngineInstanceTest
     {
-        //[SetUp]
+        [Fact]
         public void SetUp()
         {
             REngine.SetEnvironmentVariables();
@@ -52,6 +52,7 @@ namespace RDotNet
         // Marking this test as ignore, as it is incompatible with trying to get all unit tests
         // run from NUnit to pass successfully.
         // Keeping the test code as a basis for potential further feasibility investigations
+        [Fact(Skip ="Ignore me")]
         public void TestCreateEngineTwice()
         {
             // Investigate:
