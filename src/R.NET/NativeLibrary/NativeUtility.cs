@@ -122,7 +122,10 @@ namespace RDotNet.NativeLibrary
             if (!Directory.Exists(rHome))
                 throw new DirectoryNotFoundException($"Directory '{rHome}' does not exist - cannot set the environment variable R_HOME to that value");
             Environment.SetEnvironmentVariable("R_HOME", rHome);
-            var res = setenv("R_HOME", rHome, 1);
+            if (platform == PlatformID.MacOSX || platform == PlatformID.Unix)
+            {
+                _ = setenv("R_HOME", rHome, 1);
+            }
 
             if (platform == PlatformID.Unix)
             {
