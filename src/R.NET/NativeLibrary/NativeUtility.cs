@@ -124,7 +124,7 @@ namespace RDotNet.NativeLibrary
             Environment.SetEnvironmentVariable("R_HOME", rHome);
             if (platform == PlatformID.MacOSX || platform == PlatformID.Unix)
             {
-                _ = setenv("R_HOME", rHome, 1);
+                _ = LibcFunctions.setenv("R_HOME", rHome, 1);
             }
 
             if (platform == PlatformID.Unix)
@@ -395,9 +395,7 @@ namespace RDotNet.NativeLibrary
             if (File.Exists(Path.Combine(libdir, shlibFilename)))
                 return libdir;
             libdir = Path.Combine(Path.GetDirectoryName(bindir), "lib64", "R", "lib");
-            if (File.Exists(Path.Combine(libdir, shlibFilename)))
-                return libdir;
-            return "/usr/lib";
+            return File.Exists(Path.Combine(libdir, shlibFilename)) ? libdir : "/usr/lib";
         }
 
         private string FindRPathMacOS(string rHome)
