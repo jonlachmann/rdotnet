@@ -126,6 +126,10 @@ namespace RDotNet.NativeLibrary
             {
                 _ = LibcFunctions.setenv("R_HOME", rHome, 1);
             }
+            else
+            {
+                _ = Kernel32Functions.SetEnvironmentVariable("R_HOME", rHome);
+            }
 
             if (platform == PlatformID.Unix)
             {
@@ -343,7 +347,7 @@ namespace RDotNet.NativeLibrary
           var version = GetRCurrentVersionStringFromRegistry(rCoreKey);
             if (string.IsNullOrEmpty(version))
             {
-                string[] subKeyNames = rCoreKey.GetSubKeyNames();
+                var subKeyNames = rCoreKey.GetSubKeyNames();
                 if (subKeyNames.Length > 0)
                     version = subKeyNames[0];
             }
