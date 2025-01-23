@@ -2,6 +2,7 @@ using Xunit;
 using System;
 using System.Linq;
 using System.Numerics;
+using RDotNet.NativeLibrary;
 
 namespace RDotNet;
 
@@ -29,6 +30,8 @@ public class RDotNetTestFixture
 
     protected RDotNetTestFixture()
     {
+        Environment.SetEnvironmentVariable("PATHNET", "C:/test1234");
+        LibcFunctions.setenv("PATHPUT", "c:/test123", 1);
         SetUpFixture();
     }
 

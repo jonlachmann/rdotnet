@@ -128,7 +128,7 @@ namespace RDotNet.NativeLibrary
             }
             else
             {
-                _ = Kernel32Functions.SetEnvironmentVariable("R_HOME", rHome);
+                _ = WindowsEnvFunctions.SetEnvironmentVariable("R_HOME", rHome);
             }
 
             if (platform == PlatformID.Unix)
@@ -419,6 +419,15 @@ namespace RDotNet.NativeLibrary
             //  Not sure of the intent, and why a SetDllDirectory was used, where we moved away from. May need discussion with skyguy94
             //  relying on this too platform-specific way to specify the search path where
             //  Environment.SetEnvironmentVariable is multi-platform.
+            var platform = GetPlatform();
+            if (platform == PlatformID.Unix || platform == PlatformID.MacOSX)
+            {
+                LibcFunctions.SetEnvironmentVariable(envVarName, PrependToEnv(rPath, envVarName));
+            }
+            else
+            {
+                WindowsEnvFunctions.SetEnvironmentVariable(envVarName, PrependToEnv(rPath, envVarName));
+            }
 
             Environment.SetEnvironmentVariable(envVarName, PrependToEnv(rPath, envVarName));
             /*
