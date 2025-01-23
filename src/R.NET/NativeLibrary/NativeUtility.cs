@@ -80,7 +80,7 @@ namespace RDotNet.NativeLibrary
             if (RPath == null || RHome == null)
                 throw new InvalidOperationException("SetCachedEnvironmentVariables requires R path and home directory to have been specified or detected");
             SetenvPrepend(RPath);
-            Environment.SetEnvironmentVariable("R_HOME", RHome);
+            EnvFunctions.SetEnvironmentVariable("R_HOME", RHome, GetPlatform() == PlatformID.Win32NT);
         }
 
         /// <summary>
@@ -121,15 +121,7 @@ namespace RDotNet.NativeLibrary
                 rHome = GetShortPath(rHome);
             if (!Directory.Exists(rHome))
                 throw new DirectoryNotFoundException($"Directory '{rHome}' does not exist - cannot set the environment variable R_HOME to that value");
-            Environment.SetEnvironmentVariable("R_HOME", rHome);
-            if (platform == PlatformID.MacOSX || platform == PlatformID.Unix)
-            {
-                _ = LibcFunctions.setenv("R_HOME", rHome, 1);
-            }
-            else
-            {
-                _ = WindowsEnvFunctions.SetEnvironmentVariable("R_HOME", rHome);
-            }
+            EnvFunctions.SetEnvironmentVariable("R_HOME", rHome, platform == PlatformID.Win32NT);
 
             if (platform == PlatformID.Unix)
             {
@@ -420,16 +412,7 @@ namespace RDotNet.NativeLibrary
             //  relying on this too platform-specific way to specify the search path where
             //  Environment.SetEnvironmentVariable is multi-platform.
             var platform = GetPlatform();
-            if (platform == PlatformID.Unix || platform == PlatformID.MacOSX)
-            {
-                LibcFunctions.SetEnvironmentVariable(envVarName, PrependToEnv(rPath, envVarName));
-            }
-            else
-            {
-                WindowsEnvFunctions.SetEnvironmentVariable(envVarName, PrependToEnv(rPath, envVarName));
-            }
-
-            Environment.SetEnvironmentVariable(envVarName, PrependToEnv(rPath, envVarName));
+            EnvFunctions.SetEnvironmentVariable(envVarName, PrependToEnv(rPath, envVarName), platform == PlatformID.Win32NT);
             /*
             var platform = GetPlatform();
             if (platform == PlatformID.Win32NT)
