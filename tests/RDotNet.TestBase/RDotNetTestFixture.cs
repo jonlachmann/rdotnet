@@ -30,8 +30,6 @@ public class RDotNetTestFixture
 
     protected RDotNetTestFixture()
     {
-        Environment.SetEnvironmentVariable("PATHNET", "C:/test1234");
-        LibcFunctions.setenv("PATHPUT", "c:/test123", 1);
         SetUpFixture();
     }
 
