@@ -621,6 +621,18 @@ namespace RDotNet
         }
 
         /// <summary>
+        /// Tries to get a symbol defined in the global environment.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="symbol">The symbol if it was found.</param>
+        /// <returns>A boolean denoting if the symbol was found or not.</returns>
+        public bool TryGetSymbol(string name, out SymbolicExpression symbol)
+        {
+            CheckEngineIsRunning();
+            return GlobalEnvironment.TryGetSymbol(name, out symbol);
+        }
+
+        /// <summary>
         /// Gets a symbol defined in the global environment.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -631,6 +643,20 @@ namespace RDotNet
             CheckEngineIsRunning();
             environment ??= GlobalEnvironment;
             return environment.GetSymbol(name);
+        }
+
+        /// <summary>
+        /// Gets a symbol defined in the global environment.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="environment">The environment. If <c>null</c> is passed, <see cref="GlobalEnvironment"/> is used.</param>
+        /// <param name="symbol">The symbol if it was found.</param>
+        /// <returns>A boolean denoting if the symbol was found or not.</returns>
+        public bool TryGetSymbol(string name, REnvironment environment, out SymbolicExpression symbol)
+        {
+            CheckEngineIsRunning();
+            environment ??= GlobalEnvironment;
+            return environment.TryGetSymbol(name, out symbol);
         }
 
         /// <summary>
@@ -799,7 +825,7 @@ namespace RDotNet
                 // even number of " and an even number of ' characters
 
                 var whereHash = IndexOfAll(statement, "#");
-                var firstComment = EvenStringDelimitors(statement, whereHash);
+                var firstComment = EvenStringDelimiters(statement, whereHash);
                 if (firstComment < 0)
                 // incomplete statement??? such as:
                 // paste('this is the # ', ' start of an incomplete # statement
@@ -818,7 +844,7 @@ namespace RDotNet
             return result.ToArray();
         }
 
-        private static int EvenStringDelimitors(string statement, int[] whereHash)
+        private static int EvenStringDelimiters(string statement, int[] whereHash)
         {
             foreach (var t in whereHash)
             {
