@@ -1,5 +1,6 @@
 using DynamicInterop;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -270,24 +271,23 @@ namespace RDotNet.NativeLibrary
                     break;
 
                 case PlatformID.Unix:
-                    if (!string.IsNullOrEmpty(rPath))
-                        // if rPath is e.g. /usr/local/lib/R/lib/ ,
-                        rHome = Path.GetDirectoryName(rPath);
-                    else
-                    {
-                        rHome = "/usr/local/lib/R";
-                        if (!Directory.Exists(rHome))
-                            rHome = "/usr/lib/R";
-                    }
-                    if (!rHome.EndsWith("R"))
-                        // if rPath is e.g. /usr/lib/ (symlink)  then default
-                        rHome = "/usr/lib/R";
+                    rHome = GetRHomeUnix(rPath);
                     break;
 
                 default:
                     throw new NotSupportedException(platform.ToString());
             }
             return rHome;
+        }
+
+        private static string GetRHomeUnix(string rPath = null)
+        {
+            IEnumerable<string> alternatives = new[] { "/usr/local/lib/R", "/usr/lib/R" };
+            if (!string.IsNullOrEmpty(rPath)) alternatives = alternatives.Append("hej");
+            const string requiredSubDir = "/library/base/R";
+
+            // Use the logic that the "library/base/R" subfolder must exist as R will look for it in R_OpenLibraryFile during init
+            return alternatives.FirstOrDefault(x => Directory.Exists(x + requiredSubDir));
         }
 
         private string GetRhomeWin32NT(StringBuilder logger)
