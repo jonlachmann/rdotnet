@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using DynamicInterop;
 
 namespace RDotNet
 {
@@ -363,6 +364,16 @@ namespace RDotNet
                 }
             }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Set an arbitrary environment variable in both the C# and C environments.
+        /// </summary>
+        /// <param name="variable">The variable to set</param>
+        /// <param name="value">The value to set the variable to</param>
+        public static void SetEnvironmentVariable(string variable, string value)
+        {
+            EnvFunctions.SetEnvironmentVariable(variable, value, PlatformUtility.GetPlatform() == PlatformID.Win32NT);
         }
 
         /// <summary>

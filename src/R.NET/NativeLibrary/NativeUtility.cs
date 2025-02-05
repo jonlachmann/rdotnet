@@ -283,7 +283,7 @@ namespace RDotNet.NativeLibrary
         private static string GetRHomeUnix(string rPath = null)
         {
             IEnumerable<string> alternatives = new[] { "/usr/local/lib/R", "/usr/lib/R" };
-            if (!string.IsNullOrEmpty(rPath)) alternatives = alternatives.Append("hej");
+            if (!string.IsNullOrEmpty(rPath)) alternatives = alternatives.Append(Path.GetDirectoryName(rPath));
             const string requiredSubDir = "/library/base/R";
 
             // Use the logic that the "library/base/R" subfolder must exist as R will look for it in R_OpenLibraryFile during init
