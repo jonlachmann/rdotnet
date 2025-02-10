@@ -3,6 +3,7 @@ using RDotNet.Internals.Unix;
 using RDotNet.NativeLibrary;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -107,13 +108,20 @@ namespace RDotNet.Devices
                 var home = Marshal.PtrToStringAnsi(Engine.GetFunction<GetValue>("getRUser")());
                 parameter.Start.home = ToNativeUnixPath(home);
             }
-            parameter.Start.ReadConsole = ReadConsole;
-            parameter.Start.WriteConsole = WriteConsole;
-            parameter.Start.WriteConsoleEx = WriteConsoleEx;
-            parameter.Start.CallBack = Callback;
-            parameter.Start.ShowMessage = ShowMessage;
-            parameter.Start.YesNoCancel = Ask;
-            parameter.Start.Busy = Busy;
+            if (IsMapped(nameof(ReadConsole)))
+                parameter.Start.ReadConsole = ReadConsole;
+            if (IsMapped(nameof(WriteConsole)))
+                parameter.Start.WriteConsole = WriteConsole;
+            if (IsMapped(nameof(WriteConsoleEx)))
+                parameter.Start.WriteConsoleEx = WriteConsoleEx;
+            if (IsMapped(nameof(Callback)))
+                parameter.Start.CallBack = Callback;
+            if (IsMapped(nameof(ShowMessage)))
+                parameter.Start.ShowMessage = ShowMessage;
+            if (IsMapped(nameof(Ask)))
+                parameter.Start.YesNoCancel = Ask;
+            if (IsMapped(nameof(Busy)))
+                parameter.Start.Busy = Busy;
         }
 
         private static IntPtr ToNativeUnixPath(string path)
@@ -121,20 +129,34 @@ namespace RDotNet.Devices
             return Marshal.StringToHGlobalAnsi(ConvertSeparatorToUnixStylePath(path));
         }
 
+        private bool IsMapped(string method)
+        {
+            var devType = _device.GetType();
+            return devType.GetMethod(method)?.GetCustomAttribute<NotMappedAttribute>() == null;
+        }
+
         private void SetupUnixDevice()
         {
+            if (IsMapped(nameof(Suicide)))
+            {
+                _suicideDelegate = Suicide;
+                var newSuicide = Marshal.GetFunctionPointerForDelegate(_suicideDelegate);
+                _engine.WriteIntPtr("ptr_R_Suicide", newSuicide);
+            }
 
-            _suicideDelegate = Suicide;
-            var newSuicide = Marshal.GetFunctionPointerForDelegate(_suicideDelegate);
-            _engine.WriteIntPtr("ptr_R_Suicide", newSuicide);
+            if (IsMapped(nameof(ShowMessage)))
+            {
+                _showMessageDelegate = ShowMessage;
+                var newShowMessage = Marshal.GetFunctionPointerForDelegate(_showMessageDelegate);
+                _engine.WriteIntPtr("ptr_R_ShowMessage", newShowMessage);
+            }
 
-            _showMessageDelegate = ShowMessage;
-            var newShowMessage = Marshal.GetFunctionPointerForDelegate(_showMessageDelegate);
-            _engine.WriteIntPtr("ptr_R_ShowMessage", newShowMessage);
-
-            _readConsoleDelegate = ReadConsole;
-            var newReadConsole = Marshal.GetFunctionPointerForDelegate(_readConsoleDelegate);
-            _engine.WriteIntPtr("ptr_R_ReadConsole", newReadConsole);
+            if (IsMapped(nameof(ReadConsole)))
+            {
+                _readConsoleDelegate = ReadConsole;
+                var newReadConsole = Marshal.GetFunctionPointerForDelegate(_readConsoleDelegate);
+                _engine.WriteIntPtr("ptr_R_ReadConsole", newReadConsole);
+            }
 
             // Candidate fix for https://github.com/rdotnet/rdotnet/issues/131
             // Not sure when behavior changed in R character handling, but it seems that at some point
@@ -148,57 +170,96 @@ namespace RDotNet.Devices
             _engine.WriteIntPtr("R_Consolefile", IntPtr.Zero);
 
 
-            _writeConsoleDelegate = WriteConsole;
-            var newWriteConsole = Marshal.GetFunctionPointerForDelegate(_writeConsoleDelegate);
-            _engine.WriteIntPtr("ptr_R_WriteConsole", newWriteConsole);
+            if (IsMapped(nameof(WriteConsole)))
+            {
+                _writeConsoleDelegate = WriteConsole;
+                var newWriteConsole = Marshal.GetFunctionPointerForDelegate(_writeConsoleDelegate);
+                _engine.WriteIntPtr("ptr_R_WriteConsole", newWriteConsole);
+            }
 
-            _writeConsoleExDelegate = WriteConsoleEx;
-            var newWriteConsoleEx = Marshal.GetFunctionPointerForDelegate(_writeConsoleExDelegate);
-            _engine.WriteIntPtr("ptr_R_WriteConsoleEx", newWriteConsoleEx);
+            if (IsMapped(nameof(WriteConsoleEx)))
+            {
+                _writeConsoleExDelegate = WriteConsoleEx;
+                var newWriteConsoleEx = Marshal.GetFunctionPointerForDelegate(_writeConsoleExDelegate);
+                _engine.WriteIntPtr("ptr_R_WriteConsoleEx", newWriteConsoleEx);
+            }
 
-            _resetConsoleDelegate = ResetConsole;
-            var newResetConsole = Marshal.GetFunctionPointerForDelegate(_resetConsoleDelegate);
-            _engine.WriteIntPtr("ptr_R_ResetConsole", newResetConsole);
+            if (IsMapped(nameof(ResetConsole)))
+            {
+                _resetConsoleDelegate = ResetConsole;
+                var newResetConsole = Marshal.GetFunctionPointerForDelegate(_resetConsoleDelegate);
+                _engine.WriteIntPtr("ptr_R_ResetConsole", newResetConsole);
+            }
 
-            _flushConsoleDelegate = FlushConsole;
-            var newFlushConsole = Marshal.GetFunctionPointerForDelegate(_flushConsoleDelegate);
-            _engine.WriteIntPtr("ptr_R_FlushConsole", newFlushConsole);
+            if (IsMapped(nameof(FlushConsole)))
+            {
+                _flushConsoleDelegate = FlushConsole;
+                var newFlushConsole = Marshal.GetFunctionPointerForDelegate(_flushConsoleDelegate);
+                _engine.WriteIntPtr("ptr_R_FlushConsole", newFlushConsole);
+            }
 
-            _clearerrConsoleDelegate = ClearErrorConsole;
-            var newClearerrConsole = Marshal.GetFunctionPointerForDelegate(_clearerrConsoleDelegate);
-            _engine.WriteIntPtr("ptr_R_ClearerrConsole", newClearerrConsole);
+            if (IsMapped(nameof(ClearErrorConsole)))
+            {
+                _clearerrConsoleDelegate = ClearErrorConsole;
+                var newClearerrConsole = Marshal.GetFunctionPointerForDelegate(_clearerrConsoleDelegate);
+                _engine.WriteIntPtr("ptr_R_ClearerrConsole", newClearerrConsole);
+            }
 
-            _busyDelegate = Busy;
-            var newBusy = Marshal.GetFunctionPointerForDelegate(_busyDelegate);
-            _engine.WriteIntPtr("ptr_R_Busy", newBusy);
+            if (IsMapped(nameof(Busy)))
+            {
+                _busyDelegate = Busy;
+                var newBusy = Marshal.GetFunctionPointerForDelegate(_busyDelegate);
+                _engine.WriteIntPtr("ptr_R_Busy", newBusy);
+            }
 
-            _cleanUpDelegate = CleanUp;
-            var newCleanUp = Marshal.GetFunctionPointerForDelegate(_cleanUpDelegate);
-            _engine.WriteIntPtr("ptr_R_CleanUp", newCleanUp);
+            if (IsMapped(nameof(CleanUp)))
+            {
+                _cleanUpDelegate = CleanUp;
+                var newCleanUp = Marshal.GetFunctionPointerForDelegate(_cleanUpDelegate);
+                _engine.WriteIntPtr("ptr_R_CleanUp", newCleanUp);
+            }
 
-            _showFilesDelegate = ShowFiles;
-            var newShowFiles = Marshal.GetFunctionPointerForDelegate(_showFilesDelegate);
-            _engine.WriteIntPtr("ptr_R_ShowFiles", newShowFiles);
+            if (IsMapped(nameof(ShowFiles)))
+            {
+                _showFilesDelegate = ShowFiles;
+                var newShowFiles = Marshal.GetFunctionPointerForDelegate(_showFilesDelegate);
+                _engine.WriteIntPtr("ptr_R_ShowFiles", newShowFiles);
+            }
 
-            _chooseFileDelegate = ChooseFile;
-            var newChooseFile = Marshal.GetFunctionPointerForDelegate(_chooseFileDelegate);
-            _engine.WriteIntPtr("ptr_R_ChooseFile", newChooseFile);
+            if (IsMapped(nameof(ChooseFile)))
+            {
+                _chooseFileDelegate = ChooseFile;
+                var newChooseFile = Marshal.GetFunctionPointerForDelegate(_chooseFileDelegate);
+                _engine.WriteIntPtr("ptr_R_ChooseFile", newChooseFile);
+            }
 
-            _editFileDelegate = EditFile;
-            var newEditFile = Marshal.GetFunctionPointerForDelegate(_editFileDelegate);
-            _engine.WriteIntPtr("ptr_R_EditFile", newEditFile);
+            if (IsMapped(nameof(EditFile)))
+            {
+                _editFileDelegate = EditFile;
+                var newEditFile = Marshal.GetFunctionPointerForDelegate(_editFileDelegate);
+                _engine.WriteIntPtr("ptr_R_EditFile", newEditFile);
+            }
 
-            _loadHistoryDelegate = LoadHistory;
-            var newLoadHistory = Marshal.GetFunctionPointerForDelegate(_loadHistoryDelegate);
-            _engine.WriteIntPtr("ptr_R_loadhistory", newLoadHistory);
+            if (IsMapped(nameof(LoadHistory)))
+            {
+                _loadHistoryDelegate = LoadHistory;
+                var newLoadHistory = Marshal.GetFunctionPointerForDelegate(_loadHistoryDelegate);
+                _engine.WriteIntPtr("ptr_R_loadhistory", newLoadHistory);
+            }
 
-            _saveHistoryDelegate = SaveHistory;
-            var newSaveHistory = Marshal.GetFunctionPointerForDelegate(_saveHistoryDelegate);
-            _engine.WriteIntPtr("ptr_R_savehistory", newSaveHistory);
+            if (IsMapped(nameof(SaveHistory)))
+            {
+                _saveHistoryDelegate = SaveHistory;
+                var newSaveHistory = Marshal.GetFunctionPointerForDelegate(_saveHistoryDelegate);
+                _engine.WriteIntPtr("ptr_R_savehistory", newSaveHistory);
+            }
 
-            _addHistoryDelegate = AddHistory;
-            var newAddHistory = Marshal.GetFunctionPointerForDelegate(_addHistoryDelegate);
-            _engine.WriteIntPtr("ptr_R_addhistory", newAddHistory);
+            if (IsMapped(nameof(AddHistory)))
+            {
+                _addHistoryDelegate = AddHistory;
+                var newAddHistory = Marshal.GetFunctionPointerForDelegate(_addHistoryDelegate);
+                _engine.WriteIntPtr("ptr_R_addhistory", newAddHistory);
+            }
         }
 
         private static string ConvertSeparatorToUnixStylePath(string path)

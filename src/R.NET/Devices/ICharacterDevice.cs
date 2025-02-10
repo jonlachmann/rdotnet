@@ -1,7 +1,16 @@
+using System;
 using RDotNet.Internals;
 
 namespace RDotNet.Devices
 {
+    /// <summary>
+    /// An attribute which can be set on methods which should not be linked to R at all,
+    /// this is useful for running multicore code in R which may otherwise not play well
+    /// with the linked C# functions. Add [NotMapped] above a method to disconnect it.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
+    public class NotMappedAttribute : Attribute { }
+
     /// <summary>
     /// A console class handles user's inputs and outputs.
     /// </summary>
